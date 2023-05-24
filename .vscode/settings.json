@@ -1,0 +1,13 @@
+{
+  "files.autoSave": "onWindowChange",
+  "editor.formatOnSave": false,
+  "C_Cpp.errorSquiggles": "disabled",
+  "cSpell.words": [
+    "yyerror",
+    "yylex",
+    "yyparse"
+  ],
+  "files.associations": {
+    "lex.yy.c": "cpp"
+  }
+}
