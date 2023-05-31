@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <map>
 
 #define YYSTYPE atributos
 
@@ -15,21 +16,25 @@ struct atributos
 
 struct
 {
-	string nome;
-	string tipo_dado;
+	string nome_temp;
+	string tipo;
 	string token;
 	int num_linha;
 	int tamanho;
 	string valor;
 	string escopo;
-} tabela_simbolos[30];
+} typedef simbolo;
 
 int yylex(void);
 void yyerror(string);
 
 string geraVariavelTemporaria();
-void adicionaTabela(string,string);
+void adicionaTabela(string, string, string);
+bool testa_simbolo(string); // Testa se a variavel esta na tabela (se ja foi declarada)
+string tipo_simbolo(string nome); // Retorna o tipo do simbolo caso esse esteja na tabela 
 void imprimeTabela();
+
+std::map<std::string, simbolo> T_simbolo; // Mapa, identificado pelo nome da variavel
 
 int tmp_qnt=0;
 int cont_tabela=0;
@@ -52,10 +57,37 @@ S :	TIPO_INT MAIN '(' ')' bloco
 
 bloco : 	'{' comandos '}'	{$$.traducao = $2.traducao;};
 
-comandos : 	comando comandos 	{$$.traducao = $1.traducao + $2.traducao;} | {$$.traducao = "";};
+comandos : 	comando comandos 
+{
+	$$.traducao = $1.traducao + $2.traducao;
+}
+|
+{
+	$$.traducao = "";
+};
 
-comando : 	expressao ';';	
- 
+comando : 	expressao ';';
+| 	ID ATRIBUI expressao ';'
+{
+	if(testa_simbolo($1.label))
+	{
+		$$.traducao = $3.traducao + "\t" + T_simbolo[$1.label].nome_temp + " = " + $3.label + ";\n";
+	}else
+	{
+		yyerror("Variável não declarada!");
+	}
+}
+|	TIPO_INT ID ';'
+{
+	if (!(testa_simbolo($2.label)))
+	{
+		string var = geraVariavelTemporaria();
+		$$.traducao = "\tint " + var + ";\n";
+		adicionaTabela($2.label, "int", var);
+	}
+}
+;
+
 expressao : expressao SOMA expressao
 {
 	$$.label = geraVariavelTemporaria();
@@ -88,13 +120,13 @@ expressao : expressao SOMA expressao
 }
 | 	ID
 {
-	$$.label = geraVariavelTemporaria();
-	$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
-}
-| 	ID ATRIBUI expressao
-{
-	$$.traducao = $3.traducao + "\tint " + $1.label +";\n\t" + $1.label + " = " + $3.label + ";\n";
-	adicionaTabela($1.label, "ID");
+	if(testa_simbolo($1.label))
+	{
+		$$.label = T_simbolo[$1.label].nome_temp;
+	}else
+	{
+		yyerror("Variavel nao declarada!");
+	}
 };
 
 %%
@@ -108,19 +140,35 @@ string geraVariavelTemporaria()
 	return "TMP_" + std::to_string(tmp_qnt++);
 }
 
-void adicionaTabela(string nome, string token)
+//retorna True se o simbolo esta na tabela e False caso o contrario
+bool testa_simbolo(string nome)
 {
-	tabela_simbolos[cont_tabela].nome = nome;
-	tabela_simbolos[cont_tabela].token = token;
+	return (T_simbolo.count(nome)==1);
+}
 
-	cont_tabela++;
+void adicionaTabela(string nome, string tipo, string novo_nome)
+{
+	simbolo novo;
+	novo.tipo = tipo;
+	novo.nome_temp = novo_nome;
+	T_simbolo[nome] = novo;
+}
+
+// se o simbolo não estiver na tabela retorna mensagem de erro, caso contrário retorna o tipo do simbolo  
+string tipo_simbolo(string nome)
+{
+	if (!(testa_simbolo(nome)))
+	{
+		yyerror("Variavel nao declarada!");
+	}
+	return T_simbolo[nome].tipo;
 }
 
 void imprimeTabela()
 {
-	cout << "\n\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTOKEN\n----------------------------------\n";
-	for(int i=0; i<cont_tabela; i++) {
-		cout << tabela_simbolos[i].nome << "\t\t" << tabela_simbolos[i].token<<"\n";
+	cout << "\n\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTIPO\t\tNOME TEMPORARIO\n----------------------------------\n";
+	for(auto const& [key, val]: T_simbolo) {
+		cout << key << "\t\t" << val.tipo << "\t\t" << val.nome_temp <<"\n";
 	}
 	cout << "----------------------------------\n";
 }
