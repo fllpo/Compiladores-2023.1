@@ -37,7 +37,6 @@ void imprimeTabela();
 std::map<std::string, simbolo> T_simbolo; // Mapa, identificado pelo nome da variavel
 
 int tmp_qnt=0;
-int cont_tabela=0;
 
 %}
 
@@ -50,32 +49,30 @@ int cont_tabela=0;
 
 %%
 
-S :	TIPO_INT MAIN '(' ')' bloco
+S: TIPO_INT MAIN '(' ')' bloco		{cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{\n" << $5.traducao << "\n\treturn 0;\n}" << endl;};
+
+bloco: '{' comandos '}'
 {
-	cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{\n" << $5.traducao << "\n\treturn 0;\n}" << endl; 
-};
+	
+	$$.traducao = "\tDECLARACOES DE VARIAVEIS AQUI;\n"+$2.traducao;
+}
+;
 
-bloco : 	'{' comandos '}'	{$$.traducao = $2.traducao;};
-
-comandos : 	comando comandos 
+comandos: comando comandos 			
 {
 	$$.traducao = $1.traducao + $2.traducao;
-}
-|
+} 
+| 
 {
 	$$.traducao = "";
-};
+}
+;
 
-comando : 	expressao ';';
-| 	ID ATRIBUI expressao ';'
+comando: expressao ';';
+|	ID ATRIBUI expressao ';'
 {
-	if(testa_simbolo($1.label))
-	{
-		$$.traducao = $3.traducao + "\t" + T_simbolo[$1.label].nome_temp + " = " + $3.label + ";\n";
-	}else
-	{
-		yyerror("Variável não declarada!");
-	}
+	$$.traducao = $3.traducao + "\t" + T_simbolo[$3.label].tipo +" "+ $1.label +";\n\t" + $1.label + " = " + $3.label + ";\n";
+	adicionaTabela($1.label,T_simbolo[$3.label].tipo, $3.label);
 }
 |	TIPO_INT ID ';'
 {
@@ -83,50 +80,132 @@ comando : 	expressao ';';
 	{
 		string var = geraVariavelTemporaria();
 		$$.traducao = "\tint " + var + ";\n";
-		adicionaTabela($2.label, "int", var);
+		adicionaTabela($2.label, "int", "N/A");
+	}
+}
+|	TIPO_FLOAT ID ';'
+{
+	if (!(testa_simbolo($2.label)))
+	{
+		string var = geraVariavelTemporaria();
+		$$.traducao = "\tfloat " + var + ";\n";
+		adicionaTabela($2.label, "float", "N/A");
 	}
 }
 ;
 
-expressao : expressao SOMA expressao
+expressao:
+// Operadores matematicos
+expressao SOMA expressao
 {
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = $1.traducao + $3.traducao + "\tint " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+
+	if (T_simbolo[$1.label].tipo == T_simbolo[$3.label].tipo)
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$1.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$1.label].tipo, "N/A");
+	}
+	else if(T_simbolo[$1.label].tipo == "float")
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$1.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " + (float)" + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$1.label].tipo, "N/A");
+	}
+	else if(T_simbolo[$3.label].tipo == "float")
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$3.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = (float)" + $1.label + " + " + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$3.label].tipo, "N/A");
+	}
 }
 |	expressao SUBTRAI expressao
 {
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = $1.traducao + $3.traducao + "\tint " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
+
+	if (T_simbolo[$1.label].tipo == T_simbolo[$3.label].tipo)
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$1.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$1.label].tipo, "N/A");
+	}
+	else if(T_simbolo[$1.label].tipo == "float")
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$1.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " - (float)" + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$1.label].tipo, "N/A");
+	}
+	else if(T_simbolo[$3.label].tipo == "float")
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$3.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = (float)" + $1.label + " - " + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$3.label].tipo, "N/A");
+	}
 }
 |	expressao MULTIPLICA expressao
 {
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = $1.traducao + $3.traducao + "\tint " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
+
+	if (T_simbolo[$1.label].tipo == T_simbolo[$3.label].tipo)
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$1.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$1.label].tipo, "N/A");
+	}
+	else if(T_simbolo[$1.label].tipo == "float")
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$1.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " * (float)" + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$1.label].tipo, "N/A");
+	}
+	else if(T_simbolo[$3.label].tipo == "float")
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$3.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = (float)" + $1.label + " * " + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$3.label].tipo, "N/A");
+	}
 }
 | 	expressao DIVIDE expressao
 {
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = $1.traducao + $3.traducao + "\tint " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
+
+	if(T_simbolo[$3.label].valor=="0"||T_simbolo[$3.label].valor=="0.0") yyerror("ERRO: Divisao por zero");
+
+	if (T_simbolo[$1.label].tipo == T_simbolo[$3.label].tipo)
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$1.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$1.label].tipo, "N/A");
+	}
+	else if(T_simbolo[$1.label].tipo == "float")
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$1.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = " + $1.label + " / (float)" + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$1.label].tipo, "N/A");
+	}
+	else if(T_simbolo[$3.label].tipo == "float")
+	{
+		$$.traducao = $1.traducao + $3.traducao + "\t" + T_simbolo[$3.label].tipo + " " + $$.label + ";\n\t" + $$.label + " = (float)" + $1.label + " / " + $3.label + ";\n";
+		adicionaTabela($$.label, T_simbolo[$3.label].tipo, "N/A");
+	}
 }
+// Conversao explicita
+/*|	"(" TIPO_INT ")" expressao
+{
+
+}
+|	"(" TIPO_FLOAT ")" expressao
+{
+
+}
+*/
+// Simbolos terminais
 |	NUM
 {
 	$$.label = geraVariavelTemporaria();
 	$$.traducao = "\tint " + $$.label + ";\n\t" + $$.label + " = " + $1.traducao + ";\n";
+	adicionaTabela($$.label, "int", $1.traducao);
 }
 |	REAL
 {
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = "\tint " + $$.label + ";\n\t" + $$.label + " = " + $1.traducao + ";\n";
+	$$.traducao = "\tfloat " + $$.label + ";\n\t" + $$.label + " = " + $1.traducao + ";\n";
+	adicionaTabela($$.label, "float" ,$1.traducao);
 }
 | 	ID
 {
-	if(testa_simbolo($1.label))
-	{
-		$$.label = T_simbolo[$1.label].nome_temp;
-	}else
-	{
-		yyerror("Variavel nao declarada!");
-	}
+	$$.label = geraVariavelTemporaria();
+	$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+
 };
 
 %%
@@ -146,11 +225,12 @@ bool testa_simbolo(string nome)
 	return (T_simbolo.count(nome)==1);
 }
 
-void adicionaTabela(string nome, string tipo, string novo_nome)
+void adicionaTabela(string nome, string tipo, string valor)
 {
 	simbolo novo;
 	novo.tipo = tipo;
-	novo.nome_temp = novo_nome;
+	//novo.nome_temp = novo_nome;
+	novo.valor = valor;
 	T_simbolo[nome] = novo;
 }
 
@@ -166,11 +246,11 @@ string tipo_simbolo(string nome)
 
 void imprimeTabela()
 {
-	cout << "\n\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTIPO\t\tNOME TEMPORARIO\n----------------------------------\n";
+	cout << "\n\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTIPO\t\tVALOR\n------------------------------------------------------\n";
 	for(auto const& [key, val]: T_simbolo) {
-		cout << key << "\t\t" << val.tipo << "\t\t" << val.nome_temp <<"\n";
+		cout << key << "\t\t" << val.tipo << "\t\t" << val.valor<<"\n";
 	}
-	cout << "----------------------------------\n";
+	cout << "------------------------------------------------------\n";
 }
 
 int main(int argc, char* argv[])
