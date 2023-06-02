@@ -24,6 +24,7 @@ ID                  {letra}({letra}|{NUM})*
 "int"		        return TIPO_INT;
 "float"	            return TIPO_FLOAT;
 "char"	            return TIPO_CHAR;
+"bool"              return TIPO_BOOL;
 "string"            return TIPO_STRING;
 
 [(){}[\];,]	        return *yytext;
