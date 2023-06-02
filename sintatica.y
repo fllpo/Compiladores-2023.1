@@ -28,21 +28,24 @@ struct
 int yylex(void);
 void yyerror(string);
 
-string geraVariavelTemporaria(); // Gera um nome de variário temp
-string traducao_expressao(struct atributos, string, struct atributos, string); // Função que retona a tradução de uma expressao (aritmetica(float - int))
-void adicionaTabela(string, string, string, string); // adiciona um simbolo na tabela, com seu tipo, valor e nome_temp
-bool testa_simbolo(string); // Testa se a variavel esta na tabela (se ja foi declarada)
-string tipo_simbolo(string); // Retorna o tipo do simbolo caso esse esteja na tabela
-string traducao_declaracao(); // Retorna a traduçao de todas as declarações do código intermediário, no topo de seu bloco
-void imprimeTabela(); // Imprime a tabela de simbolos
+string geraVariavelTemporaria(); // Gera um nome de variável temporária
+string traducao_expressao(struct atributos, string, struct atributos, string); // Função que retorna a tradução de uma expressao (aritmetica(float - int))
+void adicionaTabela(string, string, string, string); // adiciona um símbolo na tabela, com seu tipo, valor e nome_temp
+bool testa_simbolo(string); // Testa se a variável está na tabela (se já foi declarada)
+string tipo_simbolo(string); // Retorna o tipo do símbolo caso esse esteja na tabela
+string traducao_declaracao(); // Retorna a tradução de todas as declarações do código intermediário, no topo de seu bloco
+void imprimeTabela(); // Imprime a tabela de símbolos
 
-std::map<std::string, simbolo> T_simbolo; // Mapa, identificado pelo nome da variavel
+std::map<std::string, simbolo> T_simbolo; // Mapa, identificado pelo nome da variável
 
 int tmp_qnt=0;
 
 %}
 
-%token MAIN ID NUM REAL TIPO_INT TIPO_FLOAT TIPO_CHAR TIPO_BOOL TIPO_STRING ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE FIM ERROR
+%token MAIN ID NUM REAL FIM ERROR
+%token TIPO_INT TIPO_FLOAT TIPO_CHAR TIPO_BOOL TIPO_STRING
+%token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE 
+%token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO
 
 %start S
 
@@ -51,14 +54,16 @@ int tmp_qnt=0;
 
 %%
 
-S: TIPO_INT MAIN '(' ')' bloco		{cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{\n" << $5.traducao << "\n\treturn 0;\n}" << endl;};
+S: TIPO_INT MAIN '(' ')' bloco
+{
+	cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{" << $5.traducao << "\n\treturn 0;\n}" << endl;
+};
 
 bloco: '{' comandos '}'
 {
 	
-	$$.traducao = "\tDECLARACOES DE VARIAVEIS AQUI:\n\n" + traducao_declaracao() + "\n" + $2.traducao;
-}
-;
+	$$.traducao = "\t\n" + traducao_declaracao() + "\n" + $2.traducao;
+};
 
 comandos: comando comandos 			
 {
@@ -67,16 +72,16 @@ comandos: comando comandos
 | 
 {
 	$$.traducao = "";
-}
-;
+};
 
 comando: expressao ';';
 |	ID ATRIBUI expressao ';'
 {
 	string var = geraVariavelTemporaria();
 	$$.traducao = $3.traducao + "\t" + var + " = " + $3.label + ";\n";
-	adicionaTabela($1.label,T_simbolo[$3.label].tipo, "N/A", var);
-}
+	adicionaTabela($1.label, T_simbolo[$3.label].tipo, T_simbolo[$3.label].valor, var);
+	
+};
 /*
 |	TIPO_INT ID ';'
 {
@@ -96,12 +101,20 @@ comando: expressao ';';
 		adicionaTabela($2.label, "float", "N/A");
 	}
 }
+|	TIPO_BOOL ID ';'
+{
+	if (!(testa_simbolo($2.label)))
+	{
+		string var = geraVariavelTemporaria();
+		$$.traducao = "\tbool " + var + ";\n";
+		adicionaTabela($2.label, "bool", "N/A");
+	}
+}
 */
-;
 
 expressao:
-// Operadores matematicos
-expressao SOMA expressao
+// 	Operadores matemáticos
+	expressao SOMA expressao
 {
 	$$.label = geraVariavelTemporaria();
 
@@ -123,20 +136,75 @@ expressao SOMA expressao
 {
 	$$.label = geraVariavelTemporaria();
 
-	if(T_simbolo[$3.label].valor=="0"||T_simbolo[$3.label].valor=="0.0") yyerror("ERRO: Divisao por zero");
+//	TODO: Trocar a comparação de valor com int e float, já que a comparação de valor atual é com string
+	if(T_simbolo[$3.label].valor=="0"||T_simbolo[$3.label].valor=="0.0") yyerror("ERRO: Divisao por zero"); 
 
 	$$.traducao = traducao_expressao($1, "/", $3, $$.label);
 }
-// Conversao explicita
-/*|	"(" TIPO_INT ")" expressao
+//	Operadores relacionais
+|	expressao MAIOR expressao
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, ">", $3, $$.label);
+}
+|	expressao MENOR expressao
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "<", $3, $$.label);
+}
+|	expressao MAIOR_IGUAL expressao
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, ">=", $3, $$.label);
+}
+|	expressao MENOR_IGUAL expressao
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "<=", $3, $$.label);
+}
+// 	Operadores lógicos
+|	expressao IGUAL expressao
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "==", $3, $$.label);
+}
+|	expressao DIFERENTE expressao
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "!=", $3, $$.label);
+}
+|	expressao E_LOGICO expressao
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "&&", $3, $$.label);
+}
+|	expressao OU_LOGICO expressao
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "||", $3, $$.label);
+}
+
+// Conversão explicita
+
+/*
+|	'(' TIPO_INT ')' expressao
 {
 
 }
-|	"(" TIPO_FLOAT ")" expressao
+|	'(' TIPO_FLOAT ')' expressao
 {
 
 }
 */
+
 // Simbolos terminais
 |	NUM
 {
@@ -154,8 +222,20 @@ expressao SOMA expressao
 {
 	$$.label = geraVariavelTemporaria();
 	$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
-
-};
+}
+| 	VERDADEIRO
+{
+	$$.label = geraVariavelTemporaria();
+	$$.traducao = "\t" + $$.label + " = " + "true" + ";\n";
+	adicionaTabela($$.label, "bool", "true", $$.label);
+}
+| 	FALSO
+{
+	$$.label = geraVariavelTemporaria();
+	$$.traducao = "\t" + $$.label + " = " + "false" + ";\n";
+	adicionaTabela($$.label, "bool", "false", $$.label);
+}
+;
 
 %%
 
@@ -168,28 +248,54 @@ string geraVariavelTemporaria()
 	return "TMP_" + std::to_string(tmp_qnt++);
 }
 
-string traducao_expressao(struct atributos s1, string sinal, struct atributos s3, string temp)
+string traducao_expressao(struct atributos s1, string operador, struct atributos s3, string temp)
 {
 	string traducao = "";
-	if (T_simbolo[s1.label].tipo == T_simbolo[s3.label].tipo)
+
+	if(T_simbolo[s1.label].tipo != "bool" || T_simbolo[s3.label].tipo != "bool") yyerror("erro booleano");
+
+	else if(T_simbolo[s1.label].tipo == "bool" && T_simbolo[s3.label].tipo == "bool")
 	{
-		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " + " + s3.label + ";\n";
-		adicionaTabela(temp, T_simbolo[s1.label].tipo, "N/A", temp);
+		if((operador == "&&" || operador == "||") && (T_simbolo[s1.label].valor == "true" && T_simbolo[s3.label].valor == "true")){
+			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+			adicionaTabela(temp, "bool", "true", temp);
+		}
+		else if(operador == "&&" && (T_simbolo[s1.label].valor == "false" || T_simbolo[s3.label].valor == "false")){
+			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+			adicionaTabela(temp, "bool", "false", temp);
+		}
+		else if(operador == "||"){
+			if((T_simbolo[s1.label].valor == "false" && T_simbolo[s3.label].valor == "true") || (T_simbolo[s1.label].valor == "false" && T_simbolo[s3.label].valor == "true"))
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else if (T_simbolo[s1.label].valor == "false" && T_simbolo[s3.label].valor == "false"){
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+				adicionaTabela(temp, "bool", "false", temp);
+			}
+		}
 	}
-	else if(T_simbolo[s1.label].tipo == "float")
+	
+	else if ((T_simbolo[s1.label].tipo == T_simbolo[s3.label].tipo) && (T_simbolo[s1.label].tipo=="float"||T_simbolo[s1.label].tipo=="int"))
 	{
-		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " + (float)" + s3.label + ";\n";
-		adicionaTabela(temp, T_simbolo[s1.label].tipo, "N/A", temp);
+		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+		adicionaTabela(temp, T_simbolo[s1.label].tipo, T_simbolo[s1.label].valor + operador + T_simbolo[s3.label].valor, temp);
 	}
-	else if(T_simbolo[s3.label].tipo == "float")
+	else if((T_simbolo[s1.label].tipo != T_simbolo[s3.label].tipo) && T_simbolo[s1.label].tipo == "float")
 	{
-		traducao = s1.traducao + s3.traducao + "\t" + temp + " = (float)" + s1.label + " + " + s3.label + ";\n";
-		adicionaTabela(temp, T_simbolo[s3.label].tipo, "N/A", temp);
+		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " (float)" + s3.label + ";\n";
+		adicionaTabela(temp, T_simbolo[s1.label].tipo, T_simbolo[s1.label].valor + operador + T_simbolo[s3.label].valor , temp);
+	}
+	else if((T_simbolo[s1.label].tipo != T_simbolo[s3.label].tipo) && T_simbolo[s3.label].tipo == "float")
+	{
+		traducao = s1.traducao + s3.traducao + "\t" + temp + " = (float)" + s1.label + " " + operador + " " + s3.label + ";\n";
+		adicionaTabela(temp, T_simbolo[s3.label].tipo, T_simbolo[s1.label].valor + operador + T_simbolo[s3.label].valor, temp);
 	}
 	return traducao;
 }
 
-//retorna True se o simbolo esta na tabela e False caso o contrario
+//retorna True se o símbolo está na tabela e False caso o contrario
 bool testa_simbolo(string nome)
 {
 	return (T_simbolo.count(nome)==1);
@@ -207,7 +313,7 @@ void adicionaTabela(string nome, string tipo, string valor, string novo_nome)
 		
 	}else if (tipo_simbolo(nome) != tipo)
 	{
-		// adicionar conversao e casos de erro
+		// TODO: adicionar conversão e casos de erro
 	}
 }
 
@@ -233,9 +339,9 @@ string traducao_declaracao()
 
 void imprimeTabela()
 {
-	cout << "\n\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTIPO\t\tVALOR\n------------------------------------------------------\n";
+	cout << "\n\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTIPO\t\tATRIBUIÇÃO\tNOME\n------------------------------------------------------\n";
 	for(auto const& [key, val]: T_simbolo) {
-		cout << key << "\t\t" << val.tipo << "\t\t" << val.valor<<"\n";
+		cout << key << "\t\t" + val.tipo << "\t\t" + val.valor << "\t\t" + val.nome_temp<<"\n";
 	}
 	cout << "------------------------------------------------------\n";
 }

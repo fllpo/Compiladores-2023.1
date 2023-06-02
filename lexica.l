@@ -34,6 +34,17 @@ ID                  {letra}({letra}|{NUM})*
 "-"                 return SUBTRAI;
 "*"                 return MULTIPLICA;
 "/"                 return DIVIDE;
+">"                 return MAIOR;
+"<"                 return MENOR;
+">="                return MAIOR_IGUAL;
+"<="                return MENOR_IGUAL;
+"=="                return IGUAL;
+"!="                return DIFERENTE;
+"&&"                return E_LOGICO;
+"||"                return OU_LOGICO;
+"verdadeiro"        return VERDADEIRO;
+"falso"             return FALSO;
+
 
 {NUM}               {yylval.traducao = yytext; return NUM;}
 {REAL}              {yylval.traducao = yytext; return REAL;}
