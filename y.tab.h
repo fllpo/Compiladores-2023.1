@@ -61,14 +61,15 @@ extern int yydebug;
     TIPO_INT = 262,                /* TIPO_INT  */
     TIPO_FLOAT = 263,              /* TIPO_FLOAT  */
     TIPO_CHAR = 264,               /* TIPO_CHAR  */
-    TIPO_STRING = 265,             /* TIPO_STRING  */
-    ATRIBUI = 266,                 /* ATRIBUI  */
-    SOMA = 267,                    /* SOMA  */
-    SUBTRAI = 268,                 /* SUBTRAI  */
-    MULTIPLICA = 269,              /* MULTIPLICA  */
-    DIVIDE = 270,                  /* DIVIDE  */
-    FIM = 271,                     /* FIM  */
-    ERROR = 272                    /* ERROR  */
+    TIPO_BOOL = 265,               /* TIPO_BOOL  */
+    TIPO_STRING = 266,             /* TIPO_STRING  */
+    ATRIBUI = 267,                 /* ATRIBUI  */
+    SOMA = 268,                    /* SOMA  */
+    SUBTRAI = 269,                 /* SUBTRAI  */
+    MULTIPLICA = 270,              /* MULTIPLICA  */
+    DIVIDE = 271,                  /* DIVIDE  */
+    FIM = 272,                     /* FIM  */
+    ERROR = 273                    /* ERROR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -84,14 +85,15 @@ extern int yydebug;
 #define TIPO_INT 262
 #define TIPO_FLOAT 263
 #define TIPO_CHAR 264
-#define TIPO_STRING 265
-#define ATRIBUI 266
-#define SOMA 267
-#define SUBTRAI 268
-#define MULTIPLICA 269
-#define DIVIDE 270
-#define FIM 271
-#define ERROR 272
+#define TIPO_BOOL 265
+#define TIPO_STRING 266
+#define ATRIBUI 267
+#define SOMA 268
+#define SUBTRAI 269
+#define MULTIPLICA 270
+#define DIVIDE 271
+#define FIM 272
+#define ERROR 273
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
