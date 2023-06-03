@@ -1,5 +1,6 @@
 %{
 #include <string>
+extern int num_linha;
 %}
 
 espaco              [ \t]
@@ -15,7 +16,7 @@ CHAR                \'({letra}|{NUM})\'
 ID                  {letra}({letra}|{NUM})*
 %%
 
-"\n"		        {}
+"\n"		        {} num_linha+=1;
 
 {DELIM} 	        {}
 

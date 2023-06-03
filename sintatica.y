@@ -41,7 +41,8 @@ void imprimeTabela(); // Imprime a tabela de símbolos
 
 std::map<std::string, simbolo> T_simbolo; // Mapa, identificado pelo nome da variável
 
-int tmp_qnt=0;
+int tmp_qnt = 0;
+int num_linha = 1;
 
 %}
 
@@ -140,7 +141,7 @@ expressao:
 	$$.label = geraVariavelTemporaria();
 
 //	TODO: Trocar a comparação de valor com int e float, já que a comparação de valor atual é com string
-	if(T_simbolo[$3.label].valor=="0"||T_simbolo[$3.label].valor=="0.0") yyerror("ERRO: Divisao por zero"); 
+	if(T_simbolo[$3.label].valor=="0"||T_simbolo[$3.label].valor=="0.0") yyerror("Divisão por zero"); 
 
 	$$.traducao = traducao_expressao($1, "/", $3, $$.label);
 }
@@ -308,10 +309,32 @@ string logico(struct atributos s1, string operador, struct atributos s3, string 
 {
 	string traducao = "";
 
-	if(T_simbolo[s1.label].tipo != "bool" || T_simbolo[s3.label].tipo != "bool")
+	if(operador == "==")
 	{
-		yyerror("erro booleano"); // termina a função
+		if(T_simbolo[s1.label].valor == T_simbolo[s3.label].valor)
+		{
+			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+			adicionaTabela(temp, "bool", "true", temp);
+		}
+		else
+		{
+			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+			adicionaTabela(temp, "bool", "false", temp);
+		}
 	}
+	else if (operador == "!=")
+	{
+		if(T_simbolo[s1.label].valor != T_simbolo[s3.label].valor)
+		{
+			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+			adicionaTabela(temp, "bool", "true", temp);
+		}
+		else{
+			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+			adicionaTabela(temp, "bool", "false", temp);
+		}
+
+	}	
 	else if(T_simbolo[s1.label].tipo == "bool" && T_simbolo[s3.label].tipo == "bool")
 	{
 		if((operador == "&&" || operador == "||") && (T_simbolo[s1.label].valor == "true" && T_simbolo[s3.label].valor == "true")){
@@ -323,7 +346,7 @@ string logico(struct atributos s1, string operador, struct atributos s3, string 
 			adicionaTabela(temp, "bool", "false", temp);
 		}
 		else if(operador == "||"){
-			if((T_simbolo[s1.label].valor == "false" && T_simbolo[s3.label].valor == "true") || (T_simbolo[s1.label].valor == "false" && T_simbolo[s3.label].valor == "true"))
+			if((T_simbolo[s1.label].valor == "false" && T_simbolo[s3.label].valor == "true") || (T_simbolo[s1.label].valor == "true" && T_simbolo[s3.label].valor == "false"))
 			{
 				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 				adicionaTabela(temp, "bool", "true", temp);
@@ -346,7 +369,7 @@ string traducao_expressao(struct atributos s1, string operador, struct atributos
 	{
 		return aritmetica(s1, operador, s3, temp);
 	}
-	if(operador == "&&"|| operador == "||")
+	if(operador == "&&"|| operador == "||" || operador == "==" || operador == "!=")
 	{
 		return logico(s1, operador, s3, temp);
 	}
@@ -381,9 +404,9 @@ string tipo_simbolo(string nome)
 {
 	if (!(testa_simbolo(nome)))
 	{
-		yyerror("Variavel nao declarada!");
+		yyerror("Variável não declarada");
 	}
-	cout << T_simbolo[nome].tipo << endl;
+	//cout << T_simbolo[nome].tipo << endl;
 	return T_simbolo[nome].tipo;
 }
 
@@ -403,7 +426,7 @@ string traducao_declaracao()
 
 void imprimeTabela()
 {
-	cout << "\n\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTIPO\t\tATRIBUIÇÃO\tNOME\n------------------------------------------------------\n";
+	cout << "\n\n\t\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTIPO\t\tATRIBUIÇÃO\tNOME\n------------------------------------------------------\n";
 	for(auto const& [key, val]: T_simbolo) {
 		cout << key << "\t\t" + val.tipo << "\t\t" + val.valor << "\t\t" + val.nome_temp<<"\n";
 	}
@@ -420,6 +443,6 @@ int main(int argc, char* argv[])
 
 void yyerror(string MSG)
 {
-	cout << MSG << endl;
+	cout << "ERRO! Linha " << num_linha << " | " << MSG << endl;
 	exit (0);
 }				
