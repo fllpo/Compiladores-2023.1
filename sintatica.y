@@ -235,6 +235,9 @@ expressao:
 	{
 		$$.label = geraVariavelTemporaria();
 		$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+	}else
+	{
+		$$.traducao = "";
 	}
 }
 | 	VERDADEIRO

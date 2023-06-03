@@ -671,7 +671,7 @@ static const yytype_uint8 yyrline[] =
 {
        0,    60,    60,    65,    71,    76,    80,    81,   120,   126,
      132,   138,   148,   154,   160,   166,   172,   178,   185,   191,
-     220,   226,   232,   240,   246
+     220,   226,   232,   243,   249
 };
 #endif
 
@@ -1458,33 +1458,36 @@ yyreduce:
 	{
 		yyval.label = geraVariavelTemporaria();
 		yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
+	}else
+	{
+		yyval.traducao = "";
 	}
 }
-#line 1464 "y.tab.c"
+#line 1467 "y.tab.c"
     break;
 
   case 23: /* expressao: VERDADEIRO  */
-#line 241 "sintatica.y"
+#line 244 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + "1" + ";\n";
 	adicionaTabela(yyval.label, "bool", "true", yyval.label);
 }
-#line 1474 "y.tab.c"
+#line 1477 "y.tab.c"
     break;
 
   case 24: /* expressao: FALSO  */
-#line 247 "sintatica.y"
+#line 250 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + "0" + ";\n";
 	adicionaTabela(yyval.label, "bool", "false", yyval.label);
 }
-#line 1484 "y.tab.c"
+#line 1487 "y.tab.c"
     break;
 
 
-#line 1488 "y.tab.c"
+#line 1491 "y.tab.c"
 
       default: break;
     }
@@ -1677,7 +1680,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 254 "sintatica.y"
+#line 257 "sintatica.y"
 
 
 #include "lex.yy.c"
