@@ -81,7 +81,7 @@ comando: expressao ';';
 |	ID ATRIBUI expressao ';'
 {
 	string var = geraVariavelTemporaria();
-	$$.traducao = $3.traducao + "\t" + var + " = " + $3.label + ";\n";
+	$$.traducao = $3.traducao + "\t" + var + " = " + T_simbolo[$3.label].nome_temp + ";\n";
 	adicionaTabela($1.label, T_simbolo[$3.label].tipo, T_simbolo[$3.label].valor, var);
 	
 };
@@ -231,8 +231,11 @@ expressao:
 }
 | 	ID
 {
-	$$.label = geraVariavelTemporaria();
-	$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+	if(!(testa_simbolo($1.label)))
+	{
+		$$.label = geraVariavelTemporaria();
+		$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+	}
 }
 | 	VERDADEIRO
 {
