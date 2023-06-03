@@ -1700,17 +1700,17 @@ string aritmetica(struct atributos s1, string operador, struct atributos s3, str
 
 	if((T_simbolo[s1.label].tipo == T_simbolo[s3.label].tipo) && (T_simbolo[s1.label].tipo=="float"||T_simbolo[s1.label].tipo=="int"))
 	{
-		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 		adicionaTabela(temp, T_simbolo[s1.label].tipo, T_simbolo[s1.label].valor + operador + T_simbolo[s3.label].valor, temp);
 	}
 	else if((T_simbolo[s1.label].tipo != T_simbolo[s3.label].tipo) && T_simbolo[s1.label].tipo == "float")
 	{
-		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " (float)" + s3.label + ";\n";
+		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " (float)" + T_simbolo[s3.label].nome_temp + ";\n";
 		adicionaTabela(temp, T_simbolo[s1.label].tipo, T_simbolo[s1.label].valor + operador + T_simbolo[s3.label].valor , temp);
 	}
 	else if((T_simbolo[s1.label].tipo != T_simbolo[s3.label].tipo) && T_simbolo[s3.label].tipo == "float")
 	{
-		traducao = s1.traducao + s3.traducao + "\t" + temp + " = (float)" + s1.label + " " + operador + " " + s3.label + ";\n";
+		traducao = s1.traducao + s3.traducao + "\t" + temp + " = (float)" + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 		adicionaTabela(temp, T_simbolo[s3.label].tipo, T_simbolo[s1.label].valor + operador + T_simbolo[s3.label].valor, temp);
 	}
 
@@ -1739,21 +1739,21 @@ string logico(struct atributos s1, string operador, struct atributos s3, string 
 	else if(T_simbolo[s1.label].tipo == "bool" && T_simbolo[s3.label].tipo == "bool")
 	{
 		if((operador == "&&" || operador == "||") && (T_simbolo[s1.label].valor == "true" && T_simbolo[s3.label].valor == "true")){
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 			adicionaTabela(temp, "bool", "true", temp);
 		}
 		else if(operador == "&&" && (T_simbolo[s1.label].valor == "false" || T_simbolo[s3.label].valor == "false")){
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 			adicionaTabela(temp, "bool", "false", temp);
 		}
 		else if(operador == "||"){
 			if((T_simbolo[s1.label].valor == "false" && T_simbolo[s3.label].valor == "true") || (T_simbolo[s1.label].valor == "false" && T_simbolo[s3.label].valor == "true"))
 			{
-				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 				adicionaTabela(temp, "bool", "true", temp);
 			}
 			else if (T_simbolo[s1.label].valor == "false" && T_simbolo[s3.label].valor == "false"){
-				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 				adicionaTabela(temp, "bool", "false", temp);
 			}
 		}
