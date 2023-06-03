@@ -671,7 +671,7 @@ static const yytype_uint8 yyrline[] =
 {
        0,    60,    60,    65,    71,    76,    80,    81,   120,   126,
      132,   138,   148,   154,   160,   166,   172,   178,   185,   191,
-     220,   226,   232,   237,   243
+     220,   226,   232,   240,   246
 };
 #endif
 
@@ -1301,7 +1301,7 @@ yyreduce:
 #line 82 "sintatica.y"
 {
 	string var = geraVariavelTemporaria();
-	yyval.traducao = yyvsp[-1].traducao + "\t" + var + " = " + yyvsp[-1].label + ";\n";
+	yyval.traducao = yyvsp[-1].traducao + "\t" + var + " = " + T_simbolo[yyvsp[-1].label].nome_temp + ";\n";
 	adicionaTabela(yyvsp[-3].label, T_simbolo[yyvsp[-1].label].tipo, T_simbolo[yyvsp[-1].label].valor, var);
 	
 }
@@ -1454,34 +1454,37 @@ yyreduce:
   case 22: /* expressao: ID  */
 #line 233 "sintatica.y"
 {
-	yyval.label = geraVariavelTemporaria();
-	yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
+	if(!(testa_simbolo(yyvsp[0].label)))
+	{
+		yyval.label = geraVariavelTemporaria();
+		yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
+	}
 }
-#line 1461 "y.tab.c"
+#line 1464 "y.tab.c"
     break;
 
   case 23: /* expressao: VERDADEIRO  */
-#line 238 "sintatica.y"
+#line 241 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + "1" + ";\n";
 	adicionaTabela(yyval.label, "bool", "true", yyval.label);
 }
-#line 1471 "y.tab.c"
+#line 1474 "y.tab.c"
     break;
 
   case 24: /* expressao: FALSO  */
-#line 244 "sintatica.y"
+#line 247 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + "0" + ";\n";
 	adicionaTabela(yyval.label, "bool", "false", yyval.label);
 }
-#line 1481 "y.tab.c"
+#line 1484 "y.tab.c"
     break;
 
 
-#line 1485 "y.tab.c"
+#line 1488 "y.tab.c"
 
       default: break;
     }
@@ -1674,7 +1677,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 251 "sintatica.y"
+#line 254 "sintatica.y"
 
 
 #include "lex.yy.c"

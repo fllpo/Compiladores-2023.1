@@ -1,5 +1,6 @@
 int main()
 {
-	a = true && false;
+	a = true;
 	b = true;
+	c = a && b;
 }
