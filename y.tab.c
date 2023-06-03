@@ -671,8 +671,8 @@ static const yytype_int8 yytranslate[] =
 static const yytype_uint8 yyrline[] =
 {
        0,    61,    61,    66,    72,    77,    81,    82,   121,   127,
-     133,   139,   149,   155,   161,   167,   173,   179,   186,   192,
-     221,   227,   233,   244,   250
+     133,   139,   148,   154,   160,   166,   172,   178,   185,   191,
+     220,   226,   232,   243,   249
 };
 #endif
 
@@ -1342,118 +1342,117 @@ yyreduce:
   case 11: /* expressao: expressao DIVIDE expressao  */
 #line 140 "sintatica.y"
 {
+	if(std::stof(T_simbolo[yyvsp[0].label].valor)==0) yyerror("Divisão por zero");
+	
 	yyval.label = geraVariavelTemporaria();
-
-//	TODO: Trocar a comparação de valor com int e float, já que a comparação de valor atual é com string
-	if(T_simbolo[yyvsp[0].label].valor=="0"||T_simbolo[yyvsp[0].label].valor=="0.0") yyerror("Divisão por zero"); 
 
 	yyval.traducao = traducao_expressao(yyvsp[-2], "/", yyvsp[0], yyval.label);
 }
-#line 1353 "y.tab.c"
+#line 1352 "y.tab.c"
     break;
 
   case 12: /* expressao: expressao MAIOR expressao  */
-#line 150 "sintatica.y"
+#line 149 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	
 	yyval.traducao = traducao_expressao(yyvsp[-2], ">", yyvsp[0], yyval.label);
 }
-#line 1363 "y.tab.c"
+#line 1362 "y.tab.c"
     break;
 
   case 13: /* expressao: expressao MENOR expressao  */
-#line 156 "sintatica.y"
+#line 155 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	
 	yyval.traducao = traducao_expressao(yyvsp[-2], "<", yyvsp[0], yyval.label);
 }
-#line 1373 "y.tab.c"
+#line 1372 "y.tab.c"
     break;
 
   case 14: /* expressao: expressao MAIOR_IGUAL expressao  */
-#line 162 "sintatica.y"
+#line 161 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	
 	yyval.traducao = traducao_expressao(yyvsp[-2], ">=", yyvsp[0], yyval.label);
 }
-#line 1383 "y.tab.c"
+#line 1382 "y.tab.c"
     break;
 
   case 15: /* expressao: expressao MENOR_IGUAL expressao  */
-#line 168 "sintatica.y"
+#line 167 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	
 	yyval.traducao = traducao_expressao(yyvsp[-2], "<=", yyvsp[0], yyval.label);
 }
-#line 1393 "y.tab.c"
+#line 1392 "y.tab.c"
     break;
 
   case 16: /* expressao: expressao IGUAL expressao  */
-#line 174 "sintatica.y"
+#line 173 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	
 	yyval.traducao = traducao_expressao(yyvsp[-2], "==", yyvsp[0], yyval.label);
 }
-#line 1403 "y.tab.c"
+#line 1402 "y.tab.c"
     break;
 
   case 17: /* expressao: expressao DIFERENTE expressao  */
-#line 180 "sintatica.y"
+#line 179 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	
 	yyval.traducao = traducao_expressao(yyvsp[-2], "!=", yyvsp[0], yyval.label);
 }
-#line 1413 "y.tab.c"
+#line 1412 "y.tab.c"
     break;
 
   case 18: /* expressao: expressao E_LOGICO expressao  */
-#line 187 "sintatica.y"
+#line 186 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	
 	yyval.traducao = traducao_expressao(yyvsp[-2], "&&", yyvsp[0], yyval.label);
 }
-#line 1423 "y.tab.c"
+#line 1422 "y.tab.c"
     break;
 
   case 19: /* expressao: expressao OU_LOGICO expressao  */
-#line 193 "sintatica.y"
+#line 192 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	
 	yyval.traducao = traducao_expressao(yyvsp[-2], "||", yyvsp[0], yyval.label);
 }
-#line 1433 "y.tab.c"
+#line 1432 "y.tab.c"
     break;
 
   case 20: /* expressao: NUM  */
-#line 222 "sintatica.y"
+#line 221 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].traducao + ";\n";
 	adicionaTabela(yyval.label, "int", yyvsp[0].traducao, yyval.label);
 }
-#line 1443 "y.tab.c"
+#line 1442 "y.tab.c"
     break;
 
   case 21: /* expressao: REAL  */
-#line 228 "sintatica.y"
+#line 227 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].traducao + ";\n";
 	adicionaTabela(yyval.label, "float" ,yyvsp[0].traducao, yyval.label);
 }
-#line 1453 "y.tab.c"
+#line 1452 "y.tab.c"
     break;
 
   case 22: /* expressao: ID  */
-#line 234 "sintatica.y"
+#line 233 "sintatica.y"
 {
 	if(!(testa_simbolo(yyvsp[0].label)))
 	{
@@ -1464,31 +1463,31 @@ yyreduce:
 		yyval.traducao = "";
 	}
 }
-#line 1468 "y.tab.c"
+#line 1467 "y.tab.c"
     break;
 
   case 23: /* expressao: VERDADEIRO  */
-#line 245 "sintatica.y"
+#line 244 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + "1" + ";\n";
 	adicionaTabela(yyval.label, "bool", "true", yyval.label);
 }
-#line 1478 "y.tab.c"
+#line 1477 "y.tab.c"
     break;
 
   case 24: /* expressao: FALSO  */
-#line 251 "sintatica.y"
+#line 250 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + "0" + ";\n";
 	adicionaTabela(yyval.label, "bool", "false", yyval.label);
 }
-#line 1488 "y.tab.c"
+#line 1487 "y.tab.c"
     break;
 
 
-#line 1492 "y.tab.c"
+#line 1491 "y.tab.c"
 
       default: break;
     }
@@ -1681,7 +1680,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 258 "sintatica.y"
+#line 256 "sintatica.y"
 
 
 #include "lex.yy.c"
@@ -1702,7 +1701,7 @@ string aritmetica(struct atributos s1, string operador, struct atributos s3, str
 		yyerror("Tipo booleano não suporta operações aritméticas ( + - * / )"); // termina a função
 	}
 
-	if((T_simbolo[s1.label].tipo == T_simbolo[s3.label].tipo) && (T_simbolo[s1.label].tipo=="float"||T_simbolo[s1.label].tipo=="int"))
+	if((T_simbolo[s1.label].tipo == T_simbolo[s3.label].tipo) && (T_simbolo[s1.label].tipo == "float" || T_simbolo[s1.label].tipo == "int"))
 	{
 		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 		adicionaTabela(temp, T_simbolo[s1.label].tipo, T_simbolo[s1.label].valor + operador + T_simbolo[s3.label].valor, temp);
@@ -1723,12 +1722,115 @@ string aritmetica(struct atributos s1, string operador, struct atributos s3, str
 
 string relacional(struct atributos s1, string operador, struct atributos s3, string temp)
 {
+	string traducao = "";
+
 	if(T_simbolo[s1.label].tipo == "bool" || T_simbolo[s3.label].tipo == "bool")
 	{
-		yyerror("Tipo booleano não suporta operações relacionais ( < > == != >= <= )"); // termina a função
+		if(operador == ">" || operador == "<" || operador == ">=" || operador == "<=")
+			yyerror("Tipo não suporta operações relacionais (<, >, >=, <=)"); // termina a função
+	}
+	
+	if(T_simbolo[s1.label].tipo != "bool" && T_simbolo[s3.label].tipo != "bool") // tipos numericos
+	{
+		if(operador == "==")
+		{
+			if (T_simbolo[s1.label].tipo == T_simbolo[s3.label].tipo)
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				
+				if(T_simbolo[s1.label].valor == T_simbolo[s3.label].valor)
+				{
+					adicionaTabela(temp, T_simbolo[s1.label].tipo, "true", temp);
+				}
+				else adicionaTabela(temp, T_simbolo[s1.label].tipo, "false", temp);
+			}
+			else if(T_simbolo[s1.label].tipo == "int" && T_simbolo[s3.label].tipo == "float")
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = (float)" + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				
+				if(std::stof(T_simbolo[s1.label].valor) == std::stof(T_simbolo[s3.label].valor))
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else adicionaTabela(temp, "bool", "false", temp);
+			}
+			else if(T_simbolo[s1.label].tipo == "float" && T_simbolo[s3.label].tipo == "int")
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " (float)" + T_simbolo[s3.label].nome_temp + ";\n";
+			
+				if(std::stof(T_simbolo[s1.label].valor) == std::stof(T_simbolo[s3.label].valor))
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else adicionaTabela(temp, "bool", "false", temp);
+			}
+		}
+
+		else if (operador == "!=")
+		{
+			if(T_simbolo[s1.label].valor != T_simbolo[s3.label].valor)
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else 
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "false", temp);
+			}
+			if(T_simbolo[s1.label].tipo == "int" && T_simbolo[s3.label].tipo == "float")
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = (float)" + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				
+				if(std::stof(T_simbolo[s1.label].valor) != std::stof(T_simbolo[s3.label].valor))
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else adicionaTabela(temp, "bool", "false", temp);
+			}
+			else if(T_simbolo[s1.label].tipo == "float" && T_simbolo[s3.label].tipo == "int")
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " (float)" + T_simbolo[s3.label].nome_temp + ";\n";
+			
+				if(std::stof(T_simbolo[s1.label].valor) != std::stof(T_simbolo[s3.label].valor))
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else adicionaTabela(temp, "bool", "false", temp);
+			}
+		}	
 	}
 
-	string traducao = "";
+
+	else if(T_simbolo[s1.label].tipo == "bool" && T_simbolo[s3.label].tipo == "bool")
+	{
+		if(operador == "==")
+		{
+			if(T_simbolo[s1.label].valor == T_simbolo[s3.label].valor)
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "false", temp);
+			}
+		}
+		else if (operador == "!=")
+		{
+			if(T_simbolo[s1.label].valor != T_simbolo[s3.label].valor)
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "false", temp);
+			}
+		}	
+	}
 	return traducao;
 }
 
@@ -1736,33 +1838,7 @@ string logico(struct atributos s1, string operador, struct atributos s3, string 
 {
 	string traducao = "";
 
-	if(operador == "==")
-	{
-		if(T_simbolo[s1.label].valor == T_simbolo[s3.label].valor)
-		{
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
-			adicionaTabela(temp, "bool", "true", temp);
-		}
-		else
-		{
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
-			adicionaTabela(temp, "bool", "false", temp);
-		}
-	}
-	else if (operador == "!=")
-	{
-		if(T_simbolo[s1.label].valor != T_simbolo[s3.label].valor)
-		{
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
-			adicionaTabela(temp, "bool", "true", temp);
-		}
-		else{
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
-			adicionaTabela(temp, "bool", "false", temp);
-		}
-
-	}	
-	else if(T_simbolo[s1.label].tipo == "bool" && T_simbolo[s3.label].tipo == "bool")
+	if(T_simbolo[s1.label].tipo == "bool" && T_simbolo[s3.label].tipo == "bool")
 	{
 		if((operador == "&&" || operador == "||") && (T_simbolo[s1.label].valor == "true" && T_simbolo[s3.label].valor == "true")){
 			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
@@ -1796,9 +1872,13 @@ string traducao_expressao(struct atributos s1, string operador, struct atributos
 	{
 		return aritmetica(s1, operador, s3, temp);
 	}
-	if(operador == "&&"|| operador == "||" || operador == "==" || operador == "!=")
+	if(operador == "&&"|| operador == "||")
 	{
 		return logico(s1, operador, s3, temp);
+	}
+	if(operador == ">" || operador == "<" || operador == ">=" || operador == "<=" || operador == "==" || operador == "!=")
+	{
+		return relacional(s1, operador, s3, temp);
 	}
 	
 	return traducao;
@@ -1870,6 +1950,6 @@ int main(int argc, char* argv[])
 
 void yyerror(string MSG)
 {
-	cout << "ERRO! Linha " << num_linha << " | " << MSG << endl;
+	cout << "ERRO! linha " << num_linha << " | " << MSG << endl;
 	exit (0);
 }				

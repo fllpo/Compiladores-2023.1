@@ -138,10 +138,9 @@ expressao:
 }
 | 	expressao DIVIDE expressao
 {
+	if(std::stof(T_simbolo[$3.label].valor)==0) yyerror("Divisão por zero");
+	
 	$$.label = geraVariavelTemporaria();
-
-//	TODO: Trocar a comparação de valor com int e float, já que a comparação de valor atual é com string
-	if(T_simbolo[$3.label].valor=="0"||T_simbolo[$3.label].valor=="0.0") yyerror("Divisão por zero"); 
 
 	$$.traducao = traducao_expressao($1, "/", $3, $$.label);
 }
@@ -252,8 +251,7 @@ expressao:
 	$$.label = geraVariavelTemporaria();
 	$$.traducao = "\t" + $$.label + " = " + "0" + ";\n";
 	adicionaTabela($$.label, "bool", "false", $$.label);
-}
-;
+};
 
 %%
 
@@ -275,7 +273,7 @@ string aritmetica(struct atributos s1, string operador, struct atributos s3, str
 		yyerror("Tipo booleano não suporta operações aritméticas ( + - * / )"); // termina a função
 	}
 
-	if((T_simbolo[s1.label].tipo == T_simbolo[s3.label].tipo) && (T_simbolo[s1.label].tipo=="float"||T_simbolo[s1.label].tipo=="int"))
+	if((T_simbolo[s1.label].tipo == T_simbolo[s3.label].tipo) && (T_simbolo[s1.label].tipo == "float" || T_simbolo[s1.label].tipo == "int"))
 	{
 		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 		adicionaTabela(temp, T_simbolo[s1.label].tipo, T_simbolo[s1.label].valor + operador + T_simbolo[s3.label].valor, temp);
@@ -296,12 +294,115 @@ string aritmetica(struct atributos s1, string operador, struct atributos s3, str
 
 string relacional(struct atributos s1, string operador, struct atributos s3, string temp)
 {
+	string traducao = "";
+
 	if(T_simbolo[s1.label].tipo == "bool" || T_simbolo[s3.label].tipo == "bool")
 	{
-		yyerror("Tipo booleano não suporta operações relacionais ( < > == != >= <= )"); // termina a função
+		if(operador == ">" || operador == "<" || operador == ">=" || operador == "<=")
+			yyerror("Tipo não suporta operações relacionais (<, >, >=, <=)"); // termina a função
+	}
+	
+	if(T_simbolo[s1.label].tipo != "bool" && T_simbolo[s3.label].tipo != "bool") // tipos numéricos
+	{
+		if(operador == "==")
+		{
+			if (T_simbolo[s1.label].tipo == T_simbolo[s3.label].tipo)
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				
+				if(T_simbolo[s1.label].valor == T_simbolo[s3.label].valor)
+				{
+					adicionaTabela(temp, T_simbolo[s1.label].tipo, "true", temp);
+				}
+				else adicionaTabela(temp, T_simbolo[s1.label].tipo, "false", temp);
+			}
+			else if(T_simbolo[s1.label].tipo == "int" && T_simbolo[s3.label].tipo == "float")
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = (float)" + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				
+				if(std::stof(T_simbolo[s1.label].valor) == std::stof(T_simbolo[s3.label].valor))
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else adicionaTabela(temp, "bool", "false", temp);
+			}
+			else if(T_simbolo[s1.label].tipo == "float" && T_simbolo[s3.label].tipo == "int")
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " (float)" + T_simbolo[s3.label].nome_temp + ";\n";
+			
+				if(std::stof(T_simbolo[s1.label].valor) == std::stof(T_simbolo[s3.label].valor))
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else adicionaTabela(temp, "bool", "false", temp);
+			}
+		}
+
+		else if (operador == "!=")
+		{
+			if(T_simbolo[s1.label].valor != T_simbolo[s3.label].valor)
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else 
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "false", temp);
+			}
+			if(T_simbolo[s1.label].tipo == "int" && T_simbolo[s3.label].tipo == "float")
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = (float)" + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				
+				if(std::stof(T_simbolo[s1.label].valor) != std::stof(T_simbolo[s3.label].valor))
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else adicionaTabela(temp, "bool", "false", temp);
+			}
+			else if(T_simbolo[s1.label].tipo == "float" && T_simbolo[s3.label].tipo == "int")
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " (float)" + T_simbolo[s3.label].nome_temp + ";\n";
+			
+				if(std::stof(T_simbolo[s1.label].valor) != std::stof(T_simbolo[s3.label].valor))
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else adicionaTabela(temp, "bool", "false", temp);
+			}
+		}	
 	}
 
-	string traducao = "";
+
+	else if(T_simbolo[s1.label].tipo == "bool" && T_simbolo[s3.label].tipo == "bool")
+	{
+		if(operador == "==")
+		{
+			if(T_simbolo[s1.label].valor == T_simbolo[s3.label].valor)
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "false", temp);
+			}
+		}
+		else if (operador == "!=")
+		{
+			if(T_simbolo[s1.label].valor != T_simbolo[s3.label].valor)
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else
+			{
+				traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
+				adicionaTabela(temp, "bool", "false", temp);
+			}
+		}	
+	}
 	return traducao;
 }
 
@@ -309,33 +410,7 @@ string logico(struct atributos s1, string operador, struct atributos s3, string 
 {
 	string traducao = "";
 
-	if(operador == "==")
-	{
-		if(T_simbolo[s1.label].valor == T_simbolo[s3.label].valor)
-		{
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
-			adicionaTabela(temp, "bool", "true", temp);
-		}
-		else
-		{
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
-			adicionaTabela(temp, "bool", "false", temp);
-		}
-	}
-	else if (operador == "!=")
-	{
-		if(T_simbolo[s1.label].valor != T_simbolo[s3.label].valor)
-		{
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
-			adicionaTabela(temp, "bool", "true", temp);
-		}
-		else{
-			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
-			adicionaTabela(temp, "bool", "false", temp);
-		}
-
-	}	
-	else if(T_simbolo[s1.label].tipo == "bool" && T_simbolo[s3.label].tipo == "bool")
+	if(T_simbolo[s1.label].tipo == "bool" && T_simbolo[s3.label].tipo == "bool")
 	{
 		if((operador == "&&" || operador == "||") && (T_simbolo[s1.label].valor == "true" && T_simbolo[s3.label].valor == "true")){
 			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
@@ -369,9 +444,13 @@ string traducao_expressao(struct atributos s1, string operador, struct atributos
 	{
 		return aritmetica(s1, operador, s3, temp);
 	}
-	if(operador == "&&"|| operador == "||" || operador == "==" || operador == "!=")
+	if(operador == "&&"|| operador == "||")
 	{
 		return logico(s1, operador, s3, temp);
+	}
+	if(operador == ">" || operador == "<" || operador == ">=" || operador == "<=" || operador == "==" || operador == "!=")
+	{
+		return relacional(s1, operador, s3, temp);
 	}
 	
 	return traducao;
@@ -443,6 +522,6 @@ int main(int argc, char* argv[])
 
 void yyerror(string MSG)
 {
-	cout << "ERRO! Linha " << num_linha << " | " << MSG << endl;
+	cout << "ERRO! linha " << num_linha << " | " << MSG << endl;
 	exit (0);
 }				

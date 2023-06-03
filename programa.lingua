@@ -1,11 +1,5 @@
 int main()
 {
-	a = false;
-	b = true;
-	c = false != a ;
-	d = 2 == 2;
-	e = a == b;
-	f = a && b;
-	g = b || false;
-
+	a = true;
+	d = a == true;
 }
