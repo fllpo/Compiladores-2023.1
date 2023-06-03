@@ -1,5 +1,5 @@
 int main()
 {
-	a = falso && verdadeiro;
-	b = verdadeiro;
+	a = true && false;
+	b = true;
 }
