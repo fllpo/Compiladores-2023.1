@@ -1,6 +1,6 @@
 int main()
 {
-	a = true;
+	a = 2;
 	b = true;
-	c = a && b;
+	c = a + a;
 }
