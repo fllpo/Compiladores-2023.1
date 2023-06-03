@@ -79,7 +79,8 @@ extern int yydebug;
     E_LOGICO = 280,                /* E_LOGICO  */
     OU_LOGICO = 281,               /* OU_LOGICO  */
     VERDADEIRO = 282,              /* VERDADEIRO  */
-    FALSO = 283                    /* FALSO  */
+    FALSO = 283,                   /* FALSO  */
+    NEGAR = 284                    /* NEGAR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -114,6 +115,7 @@ extern int yydebug;
 #define OU_LOGICO 281
 #define VERDADEIRO 282
 #define FALSO 283
+#define NEGAR 284
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

@@ -42,8 +42,8 @@ ID                  {letra}({letra}|{NUM})*
 "!="                return DIFERENTE;
 "&&"                return E_LOGICO;
 "||"                return OU_LOGICO;
-"verdadeiro"        return VERDADEIRO;
-"falso"             return FALSO;
+"true"              return VERDADEIRO;
+"false"             return FALSO;
 
 
 {NUM}               {yylval.traducao = yytext; return NUM;}
