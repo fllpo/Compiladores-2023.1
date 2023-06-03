@@ -64,8 +64,7 @@ S: TIPO_INT MAIN '(' ')' bloco
 };
 
 bloco: '{' comandos '}'
-{
-	
+{	
 	$$.traducao = "\t\n" + traducao_declaracao() + "\n" + $2.traducao;
 };
 
@@ -200,22 +199,26 @@ expressao:
 	$$.label = geraVariavelTemporaria();
 
 	$$.traducao == "";
-}
-*/
-
+}*/
 // Conversão explicita
-
-/*
 |	'(' TIPO_INT ')' expressao
 {
+	string conversao = std::to_string(stoi(T_simbolo[$4.label].valor));
 
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = $1.traducao + $3.traducao + "\t" + $4.label + " = " + T_simbolo[$4.label].valor + ";\n\t" + $$.label + " = (int)" + $4.label + ";\n";
+	
+	adicionaTabela($$.label, "int", conversao, $$.label);
 }
 |	'(' TIPO_FLOAT ')' expressao
 {
+	string conversao = std::to_string(stof(T_simbolo[$4.label].valor));
 
+	$$.label = geraVariavelTemporaria();
+	$$.traducao = $1.traducao + $3.traducao + "\t" + $4.label + " = " + T_simbolo[$4.label].valor + ";\n\t" + $$.label + " = (float)" + $4.label + ";\n";
+	adicionaTabela($$.label, "int", conversao, $$.label);
 }
-*/
-
 // Simbolos terminais
 |	NUM
 {
@@ -452,7 +455,6 @@ string traducao_expressao(struct atributos s1, string operador, struct atributos
 	{
 		return relacional(s1, operador, s3, temp);
 	}
-	
 	return traducao;
 }
 
@@ -505,11 +507,11 @@ string traducao_declaracao()
 
 void imprimeTabela()
 {
-	cout << "\n\n\t\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTIPO\t\tATRIBUIÇÃO\tNOME\n------------------------------------------------------\n";
+	cout << "\n\n\t\tTABELA DE SíMBOLOS\n\nSÍMBOLO\t\tTIPO\tATRIBUIÇÃO\tNOME\n-------------------------------------------------------------\n";
 	for(auto const& [key, val]: T_simbolo) {
-		cout << key << "\t\t" + val.tipo << "\t\t" + val.valor << "\t\t" + val.nome_temp<<"\n";
+		cout << key << "\t\t" + val.tipo << "\t" + val.valor << "\t\t" + val.nome_temp<<"\n";
 	}
-	cout << "------------------------------------------------------\n";
+	cout << "-------------------------------------------------------------\n";
 }
 
 int main(int argc, char* argv[])

@@ -1,5 +1,5 @@
 int main()
 {
-	a = true;
-	d = a == true;
+	a = (float)1;
+	b = (int)2.0;
 }
