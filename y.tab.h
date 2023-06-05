@@ -58,29 +58,30 @@ extern int yydebug;
     ID = 259,                      /* ID  */
     NUM = 260,                     /* NUM  */
     REAL = 261,                    /* REAL  */
-    FIM = 262,                     /* FIM  */
-    ERROR = 263,                   /* ERROR  */
-    TIPO_INT = 264,                /* TIPO_INT  */
-    TIPO_FLOAT = 265,              /* TIPO_FLOAT  */
-    TIPO_CHAR = 266,               /* TIPO_CHAR  */
-    TIPO_BOOL = 267,               /* TIPO_BOOL  */
-    TIPO_STRING = 268,             /* TIPO_STRING  */
-    ATRIBUI = 269,                 /* ATRIBUI  */
-    SOMA = 270,                    /* SOMA  */
-    SUBTRAI = 271,                 /* SUBTRAI  */
-    MULTIPLICA = 272,              /* MULTIPLICA  */
-    DIVIDE = 273,                  /* DIVIDE  */
-    MAIOR = 274,                   /* MAIOR  */
-    MENOR = 275,                   /* MENOR  */
-    MAIOR_IGUAL = 276,             /* MAIOR_IGUAL  */
-    MENOR_IGUAL = 277,             /* MENOR_IGUAL  */
-    IGUAL = 278,                   /* IGUAL  */
-    DIFERENTE = 279,               /* DIFERENTE  */
-    E_LOGICO = 280,                /* E_LOGICO  */
-    OU_LOGICO = 281,               /* OU_LOGICO  */
-    VERDADEIRO = 282,              /* VERDADEIRO  */
-    FALSO = 283,                   /* FALSO  */
-    NEGAR = 284                    /* NEGAR  */
+    CHAR = 262,                    /* CHAR  */
+    FIM = 263,                     /* FIM  */
+    ERROR = 264,                   /* ERROR  */
+    TIPO_INT = 265,                /* TIPO_INT  */
+    TIPO_FLOAT = 266,              /* TIPO_FLOAT  */
+    TIPO_CHAR = 267,               /* TIPO_CHAR  */
+    TIPO_BOOL = 268,               /* TIPO_BOOL  */
+    TIPO_STRING = 269,             /* TIPO_STRING  */
+    ATRIBUI = 270,                 /* ATRIBUI  */
+    SOMA = 271,                    /* SOMA  */
+    SUBTRAI = 272,                 /* SUBTRAI  */
+    MULTIPLICA = 273,              /* MULTIPLICA  */
+    DIVIDE = 274,                  /* DIVIDE  */
+    MAIOR = 275,                   /* MAIOR  */
+    MENOR = 276,                   /* MENOR  */
+    MAIOR_IGUAL = 277,             /* MAIOR_IGUAL  */
+    MENOR_IGUAL = 278,             /* MENOR_IGUAL  */
+    IGUAL = 279,                   /* IGUAL  */
+    DIFERENTE = 280,               /* DIFERENTE  */
+    E_LOGICO = 281,                /* E_LOGICO  */
+    OU_LOGICO = 282,               /* OU_LOGICO  */
+    VERDADEIRO = 283,              /* VERDADEIRO  */
+    FALSO = 284,                   /* FALSO  */
+    NEGAR = 285                    /* NEGAR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -93,29 +94,30 @@ extern int yydebug;
 #define ID 259
 #define NUM 260
 #define REAL 261
-#define FIM 262
-#define ERROR 263
-#define TIPO_INT 264
-#define TIPO_FLOAT 265
-#define TIPO_CHAR 266
-#define TIPO_BOOL 267
-#define TIPO_STRING 268
-#define ATRIBUI 269
-#define SOMA 270
-#define SUBTRAI 271
-#define MULTIPLICA 272
-#define DIVIDE 273
-#define MAIOR 274
-#define MENOR 275
-#define MAIOR_IGUAL 276
-#define MENOR_IGUAL 277
-#define IGUAL 278
-#define DIFERENTE 279
-#define E_LOGICO 280
-#define OU_LOGICO 281
-#define VERDADEIRO 282
-#define FALSO 283
-#define NEGAR 284
+#define CHAR 262
+#define FIM 263
+#define ERROR 264
+#define TIPO_INT 265
+#define TIPO_FLOAT 266
+#define TIPO_CHAR 267
+#define TIPO_BOOL 268
+#define TIPO_STRING 269
+#define ATRIBUI 270
+#define SOMA 271
+#define SUBTRAI 272
+#define MULTIPLICA 273
+#define DIVIDE 274
+#define MAIOR 275
+#define MENOR 276
+#define MAIOR_IGUAL 277
+#define MENOR_IGUAL 278
+#define IGUAL 279
+#define DIFERENTE 280
+#define E_LOGICO 281
+#define OU_LOGICO 282
+#define VERDADEIRO 283
+#define FALSO 284
+#define NEGAR 285
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

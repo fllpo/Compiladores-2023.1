@@ -1,5 +1,6 @@
 int main()
-{
-	a = (float)1;
-	b = (int)2.0;
+{	
+	bool b;
+	b = true;
+	c = !b;
 }
