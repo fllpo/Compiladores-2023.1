@@ -45,10 +45,12 @@ ID                  {letra}({letra}|{NUM})*
 "||"                return OU_LOGICO;
 "true"              return VERDADEIRO;
 "false"             return FALSO;
+"!"                 return NEGAR;
 
 
 {NUM}               {yylval.traducao = yytext; return NUM;}
 {REAL}              {yylval.traducao = yytext; return REAL;}
+{CHAR}              {yylval.traducao = yytext; return CHAR;}
 {ID}	        	{yylval.label = yytext; return ID;}
 
 .	               	*yytext;
