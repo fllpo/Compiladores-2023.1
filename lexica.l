@@ -7,12 +7,14 @@ espaco              [ \t]
 digito              [0-9]
 letra               [A-Za-z_]
 unario              "++"|"--"
+alfaNum             [{letra}|{NUM}]
 
 
 DELIM               {espaco}+
 NUM                 [-]?{digito}+ 
 REAL                {NUM}+("."{NUM}+)?
-CHAR                \'({letra}|{NUM})\'
+CHAR                \'{alfaNum}\'
+STRING              \"({alfaNum}+)\"
 ID                  {letra}({letra}|{NUM})*
 %%
 
@@ -51,6 +53,7 @@ ID                  {letra}({letra}|{NUM})*
 {NUM}               {yylval.traducao = yytext; return NUM;}
 {REAL}              {yylval.traducao = yytext; return REAL;}
 {CHAR}              {yylval.traducao = yytext; return CHAR;}
+{STRING}            {yylval.traducao = yytext; return STRING;}
 {ID}	        	{yylval.label = yytext; return ID;}
 
 .	               	*yytext;
