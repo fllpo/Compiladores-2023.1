@@ -7,14 +7,13 @@ espaco              [ \t]
 digito              [0-9]
 letra               [A-Za-z_]
 unario              "++"|"--"
-alfaNum             [{letra}|{NUM}]
 
 
 DELIM               {espaco}+
-NUM                 [-]?{digito}+ 
-REAL                {NUM}+("."{NUM}+)?
-CHAR                \'{alfaNum}\'
-STRING              \"({alfaNum}+)\"
+NUM                 {digito}+ 
+REAL                {NUM}+("."{NUM}+)?      
+CHAR                \'{letra}|{NUM}\'
+STRING              \"(({letra}|{NUM})+)\"
 ID                  {letra}({letra}|{NUM})*
 %%
 

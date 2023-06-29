@@ -13,6 +13,7 @@ struct atributos
 {
 	string label;
 	string traducao;
+	string tipo;
 };
 
 struct
@@ -57,6 +58,7 @@ int num_linha = 1;
 
 %left SOMA SUBTRAI
 %right MULTIPLICA DIVIDE
+%right '('')' E_LOGICO OU_LOGICO
 
 %%
 
@@ -170,14 +172,8 @@ comando: expressao ';';
 
 
 expressao:
-	NEGAR expressao
-{
-	$$.label = geraVariavelTemporaria();
-	
-	$$.traducao = traducao_expressao($2, "!", $2, $$.label);
-}
 // 	Operadores lógicos
-|	expressao E_LOGICO relacao
+	expressao E_LOGICO relacao
 {
 	$$.label = geraVariavelTemporaria();
 	
@@ -233,15 +229,45 @@ relacao:
 	
 	$$.traducao = traducao_expressao($1, "<=", $3, $$.label);
 }
-|	aritmetica
+|	NEGAR relacao
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($2, "!", $2, $$.label);
+}
+|	converte
 {
 	$$.traducao = $1.traducao;
 	$$.label = $1.label;
 };
+converte:
+// Conversão explicita
+	'(' TIPO_INT ')' expressao
+{
+	string conversao = std::to_string(stoi(T_simbolo[$4.label].valor));
+
+	$$.label = geraVariavelTemporaria();
+	$$.traducao = $4.traducao + "\t" + $$.label + " = (int)" + $4.label + ";\n";
+	adicionaTabela($$.label, "int", conversao, $$.label);
+}
+|	'(' TIPO_FLOAT ')' expressao
+{
+	string conversao = std::to_string(stof(T_simbolo[$4.label].valor));
+
+	$$.label = geraVariavelTemporaria();
+	$$.traducao = $4.traducao + "\t" + $$.label + " = (float)" + $4.label + ";\n";
+	adicionaTabela($$.label, "float", conversao, $$.label);
+}
+|	aritmetica
+{
+	$$.traducao = $1.traducao;
+	$$.label = $1.label;
+}
+;
 
 aritmetica:
 // 	Operadores matemáticos
-	par
+	fator
 {
 	$$.traducao = $1.traducao;
 	$$.label = $1.label;
@@ -272,25 +298,25 @@ aritmetica:
 
 	$$.traducao = traducao_expressao($1, "/", $3, $$.label);
 }
-// Conversão explicita
-|	'(' TIPO_INT ')' aritmetica
+|	SOMA aritmetica
 {
-	string conversao = std::to_string(stoi(T_simbolo[$4.label].valor));
-
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = $4.traducao + "\t" + $$.label + " = (int)" + $4.label + ";\n";
-	adicionaTabela($$.label, "int", conversao, $$.label);
+	adicionaTabela($$.label, tipo_simbolo($2.label), "N/A", $$.label);
+
+	$$.traducao = $2.traducao + "\t" + $$.label + " = " + T_simbolo[$2.label].nome_temp + ";\n";
 }
-|	'(' TIPO_FLOAT ')' aritmetica
+|	SUBTRAI aritmetica
 {
-	string conversao = std::to_string(stof(T_simbolo[$4.label].valor));
-
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = $4.traducao + "\t" + $$.label + " = (float)" + $4.label + ";\n";
-	adicionaTabela($$.label, "float", conversao, $$.label);
+	adicionaTabela($$.label, tipo_simbolo($2.label), "N/A", $$.label);
+
+	$$.traducao = $2.traducao + "\t" + $$.label + " = " + "-" + " " + T_simbolo[$2.label].nome_temp + ";\n";
 }
+;
+fator:
+
 // Simbolos terminais
-|	NUM
+	NUM
 {
 	$$.label = geraVariavelTemporaria();
 	$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
@@ -308,12 +334,16 @@ aritmetica:
 	$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
 	adicionaTabela($$.label, "char" ,$1.traducao, $$.label);
 }
+|	STRING
+{
+	//Para fazer
+}
 | 	ID
 {
+	cout << "fui eu" << endl;
 	if(!(testa_simbolo($1.label)))
 	{
-		$$.label = geraVariavelTemporaria();
-		$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+		yyerror("Variável não declarada!");
 	}else
 	{
 		$$.traducao = "";
@@ -330,10 +360,8 @@ aritmetica:
 	$$.label = geraVariavelTemporaria();
 	$$.traducao = "\t" + $$.label + " = " + "0" + ";\n";
 	adicionaTabela($$.label, "bool", "false", $$.label);
-};
-
-par:
-	'(' expressao ')'
+}
+|	'(' expressao ')'
 {
 	$$.traducao = $2.traducao;
 	$$.label = $2.label;
