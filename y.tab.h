@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.8.2.  */
+/* A Bison parser, made by GNU Bison 3.5.1.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -31,9 +31,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
-   especially those whose name start with YY_ or yy_.  They are
-   private implementation details that can be changed or removed.  */
+/* Undocumented macros, especially those whose name start with YY_,
+   are private implementation details.  Do not rely on them.  */
 
 #ifndef YY_YY_Y_TAB_H_INCLUDED
 # define YY_YY_Y_TAB_H_INCLUDED
@@ -45,11 +44,12 @@
 extern int yydebug;
 #endif
 
-/* Token kinds.  */
+/* Token type.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
+<<<<<<< HEAD
     YYEMPTY = -2,
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
@@ -83,14 +83,39 @@ extern int yydebug;
     VERDADEIRO = 284,              /* VERDADEIRO  */
     FALSO = 285,                   /* FALSO  */
     NEGAR = 286                    /* NEGAR  */
+=======
+    MAIN = 258,
+    ID = 259,
+    NUM = 260,
+    REAL = 261,
+    CHAR = 262,
+    FIM = 263,
+    ERROR = 264,
+    TIPO_INT = 265,
+    TIPO_FLOAT = 266,
+    TIPO_CHAR = 267,
+    TIPO_BOOL = 268,
+    TIPO_STRING = 269,
+    ATRIBUI = 270,
+    SOMA = 271,
+    SUBTRAI = 272,
+    MULTIPLICA = 273,
+    DIVIDE = 274,
+    MAIOR = 275,
+    MENOR = 276,
+    MAIOR_IGUAL = 277,
+    MENOR_IGUAL = 278,
+    IGUAL = 279,
+    DIFERENTE = 280,
+    E_LOGICO = 281,
+    OU_LOGICO = 282,
+    VERDADEIRO = 283,
+    FALSO = 284,
+    NEGAR = 285
+>>>>>>> 3500ee7 (sla)
   };
-  typedef enum yytokentype yytoken_kind_t;
 #endif
-/* Token kinds.  */
-#define YYEMPTY -2
-#define YYEOF 0
-#define YYerror 256
-#define YYUNDEF 257
+/* Tokens.  */
 #define MAIN 258
 #define ID 259
 #define NUM 260
@@ -131,8 +156,6 @@ typedef int YYSTYPE;
 
 extern YYSTYPE yylval;
 
-
 int yyparse (void);
-
 
 #endif /* !YY_YY_Y_TAB_H_INCLUDED  */
