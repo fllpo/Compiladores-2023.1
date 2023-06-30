@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.8.2.  */
+/* A Bison parser, made by GNU Bison 3.5.1.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -31,9 +31,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
-   especially those whose name start with YY_ or yy_.  They are
-   private implementation details that can be changed or removed.  */
+/* Undocumented macros, especially those whose name start with YY_,
+   are private implementation details.  Do not rely on them.  */
 
 #ifndef YY_YY_Y_TAB_H_INCLUDED
 # define YY_YY_Y_TAB_H_INCLUDED
@@ -45,79 +44,72 @@
 extern int yydebug;
 #endif
 
-/* Token kinds.  */
+/* Token type.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    MAIN = 258,                    /* MAIN  */
-    ID = 259,                      /* ID  */
-    NUM = 260,                     /* NUM  */
-    REAL = 261,                    /* REAL  */
-    CHAR = 262,                    /* CHAR  */
-    FIM = 263,                     /* FIM  */
-    ERROR = 264,                   /* ERROR  */
-    TIPO_INT = 265,                /* TIPO_INT  */
-    TIPO_FLOAT = 266,              /* TIPO_FLOAT  */
-    TIPO_CHAR = 267,               /* TIPO_CHAR  */
-    TIPO_BOOL = 268,               /* TIPO_BOOL  */
-    TIPO_STRING = 269,             /* TIPO_STRING  */
-    ATRIBUI = 270,                 /* ATRIBUI  */
-    SOMA = 271,                    /* SOMA  */
-    SUBTRAI = 272,                 /* SUBTRAI  */
-    MULTIPLICA = 273,              /* MULTIPLICA  */
-    DIVIDE = 274,                  /* DIVIDE  */
-    MAIOR = 275,                   /* MAIOR  */
-    MENOR = 276,                   /* MENOR  */
-    MAIOR_IGUAL = 277,             /* MAIOR_IGUAL  */
-    MENOR_IGUAL = 278,             /* MENOR_IGUAL  */
-    IGUAL = 279,                   /* IGUAL  */
-    DIFERENTE = 280,               /* DIFERENTE  */
-    E_LOGICO = 281,                /* E_LOGICO  */
-    OU_LOGICO = 282,               /* OU_LOGICO  */
-    VERDADEIRO = 283,              /* VERDADEIRO  */
-    FALSO = 284,                   /* FALSO  */
-    NEGAR = 285                    /* NEGAR  */
+    MAIN = 258,
+    ID = 259,
+    NUM = 260,
+    REAL = 261,
+    CHAR = 262,
+    STRING = 263,
+    FIM = 264,
+    ERROR = 265,
+    TIPO_INT = 266,
+    TIPO_FLOAT = 267,
+    TIPO_CHAR = 268,
+    TIPO_BOOL = 269,
+    TIPO_STRING = 270,
+    ATRIBUI = 271,
+    SOMA = 272,
+    SUBTRAI = 273,
+    MULTIPLICA = 274,
+    DIVIDE = 275,
+    MAIOR = 276,
+    MENOR = 277,
+    MAIOR_IGUAL = 278,
+    MENOR_IGUAL = 279,
+    IGUAL = 280,
+    DIFERENTE = 281,
+    E_LOGICO = 282,
+    OU_LOGICO = 283,
+    VERDADEIRO = 284,
+    FALSO = 285,
+    NEGAR = 286
   };
-  typedef enum yytokentype yytoken_kind_t;
 #endif
-/* Token kinds.  */
-#define YYEMPTY -2
-#define YYEOF 0
-#define YYerror 256
-#define YYUNDEF 257
+/* Tokens.  */
 #define MAIN 258
 #define ID 259
 #define NUM 260
 #define REAL 261
 #define CHAR 262
-#define FIM 263
-#define ERROR 264
-#define TIPO_INT 265
-#define TIPO_FLOAT 266
-#define TIPO_CHAR 267
-#define TIPO_BOOL 268
-#define TIPO_STRING 269
-#define ATRIBUI 270
-#define SOMA 271
-#define SUBTRAI 272
-#define MULTIPLICA 273
-#define DIVIDE 274
-#define MAIOR 275
-#define MENOR 276
-#define MAIOR_IGUAL 277
-#define MENOR_IGUAL 278
-#define IGUAL 279
-#define DIFERENTE 280
-#define E_LOGICO 281
-#define OU_LOGICO 282
-#define VERDADEIRO 283
-#define FALSO 284
-#define NEGAR 285
+#define STRING 263
+#define FIM 264
+#define ERROR 265
+#define TIPO_INT 266
+#define TIPO_FLOAT 267
+#define TIPO_CHAR 268
+#define TIPO_BOOL 269
+#define TIPO_STRING 270
+#define ATRIBUI 271
+#define SOMA 272
+#define SUBTRAI 273
+#define MULTIPLICA 274
+#define DIVIDE 275
+#define MAIOR 276
+#define MENOR 277
+#define MAIOR_IGUAL 278
+#define MENOR_IGUAL 279
+#define IGUAL 280
+#define DIFERENTE 281
+#define E_LOGICO 282
+#define OU_LOGICO 283
+#define VERDADEIRO 284
+#define FALSO 285
+#define NEGAR 286
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -129,8 +121,6 @@ typedef int YYSTYPE;
 
 extern YYSTYPE yylval;
 
-
 int yyparse (void);
-
 
 #endif /* !YY_YY_Y_TAB_H_INCLUDED  */

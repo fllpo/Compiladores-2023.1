@@ -1,6 +1,5 @@
 int main()
-{	
-	bool b;
-	b = true;
-	c = !b;
+{
+
+	a =  1.0 < 1 && 2>1;
 }
