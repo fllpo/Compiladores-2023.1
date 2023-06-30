@@ -13,6 +13,7 @@ struct atributos
 {
 	string label;
 	string traducao;
+	string tipo;
 };
 
 struct
@@ -30,9 +31,9 @@ int yylex(void);
 void yyerror(string);
 
 string geraVariavelTemporaria(); // Gera um nome de variável temporária
-string aritmetica(struct atributos, string, struct atributos, string);
-string relacional(struct atributos, string, struct atributos, string);
-string logico(struct atributos, string, struct atributos, string);
+string trad_aritmetica(struct atributos, string, struct atributos, string);
+string trad_relacional(struct atributos, string, struct atributos, string);
+string trad_logico(struct atributos, string, struct atributos, string);
 string traducao_expressao(struct atributos, string, struct atributos, string); // Função que retorna a tradução de uma expressao (aritmetica(float - int))
 void adicionaTabela(string, string, string, string); // adiciona um símbolo na tabela, com seu tipo, valor e nome_temp
 tuple<struct atributos, struct atributos> coercao_tipo(struct atributos, struct atributos);
@@ -48,7 +49,7 @@ int num_linha = 1;
 
 %}
 
-%token MAIN ID NUM REAL CHAR FIM ERROR
+%token MAIN ID NUM REAL CHAR STRING FIM ERROR
 %token TIPO_INT TIPO_FLOAT TIPO_CHAR TIPO_BOOL TIPO_STRING
 %token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE 
 %token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO NEGAR
@@ -57,6 +58,7 @@ int num_linha = 1;
 
 %left SOMA SUBTRAI
 %right MULTIPLICA DIVIDE
+%right '('')' E_LOGICO OU_LOGICO
 
 %%
 
@@ -122,7 +124,7 @@ comando: expressao ';';
 		}
 		T_simbolo[$1.label].valor = T_simbolo[$3.label].valor;
 	}
-};
+}
 |	TIPO_INT ID ';'
 {
 	if (!(testa_simbolo($2.label)))
@@ -166,94 +168,81 @@ comando: expressao ';';
 	}else{
 		yyerror("Variáriavel já declarada!");
 	}
-}
+};
+
 
 expressao:
-// 	Operadores matemáticos
-	expressao SOMA expressao
-{
-	$$.label = geraVariavelTemporaria();
-
-	$$.traducao = traducao_expressao($1, "+", $3, $$.label);
-}
-|	expressao SUBTRAI expressao
-{
-	$$.label = geraVariavelTemporaria();
-
-	$$.traducao = traducao_expressao($1, "-", $3, $$.label);
-}
-|	expressao MULTIPLICA expressao
-{
-	$$.label = geraVariavelTemporaria();
-
-	$$.traducao = traducao_expressao($1, "*", $3, $$.label);
-}
-| 	expressao DIVIDE expressao
-{
-	if(std::stof(T_simbolo[$3.label].valor)==0) yyerror("Divisão por zero");
-	
-	$$.label = geraVariavelTemporaria();
-
-	$$.traducao = traducao_expressao($1, "/", $3, $$.label);
-}
-//	Operadores relacionais
-|	expressao MAIOR expressao
-{
-	$$.label = geraVariavelTemporaria();
-	
-	$$.traducao = traducao_expressao($1, ">", $3, $$.label);
-}
-|	expressao MENOR expressao
-{
-	$$.label = geraVariavelTemporaria();
-	
-	$$.traducao = traducao_expressao($1, "<", $3, $$.label);
-}
-|	expressao MAIOR_IGUAL expressao
-{
-	$$.label = geraVariavelTemporaria();
-	
-	$$.traducao = traducao_expressao($1, ">=", $3, $$.label);
-}
-|	expressao MENOR_IGUAL expressao
-{
-	$$.label = geraVariavelTemporaria();
-	
-	$$.traducao = traducao_expressao($1, "<=", $3, $$.label);
-}
-|	expressao IGUAL expressao
-{
-	$$.label = geraVariavelTemporaria();
-	
-	$$.traducao = traducao_expressao($1, "==", $3, $$.label);
-}
-|	expressao DIFERENTE expressao
-{
-	$$.label = geraVariavelTemporaria();
-	
-	$$.traducao = traducao_expressao($1, "!=", $3, $$.label);
-}
 // 	Operadores lógicos
-|	expressao E_LOGICO expressao
+	expressao E_LOGICO relacao
 {
 	$$.label = geraVariavelTemporaria();
 	
 	$$.traducao = traducao_expressao($1, "&&", $3, $$.label);
 }
-|	expressao OU_LOGICO expressao
+|	expressao OU_LOGICO relacao
 {
 	$$.label = geraVariavelTemporaria();
 	
 	$$.traducao = traducao_expressao($1, "||", $3, $$.label);
 }
-| NEGAR expressao
+|	relacao
+{
+	$$.traducao = $1.traducao;
+	$$.label = $1.label;
+};
+relacao:
+//	Operadores relacionais
+	aritmetica IGUAL aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "==", $3, $$.label);
+}
+|	aritmetica DIFERENTE aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "!=", $3, $$.label);
+}
+//	Operadores relacionais
+|	aritmetica MAIOR aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, ">", $3, $$.label);
+}
+|	aritmetica MENOR aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "<", $3, $$.label);
+}
+|	aritmetica MAIOR_IGUAL aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, ">=", $3, $$.label);
+}
+|	aritmetica MENOR_IGUAL aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+	
+	$$.traducao = traducao_expressao($1, "<=", $3, $$.label);
+}
+|	NEGAR relacao
 {
 	$$.label = geraVariavelTemporaria();
 	
 	$$.traducao = traducao_expressao($2, "!", $2, $$.label);
 }
+|	converte
+{
+	$$.traducao = $1.traducao;
+	$$.label = $1.label;
+};
+converte:
 // Conversão explicita
-|	'(' TIPO_INT ')' expressao
+	'(' TIPO_INT ')' expressao
 {
 	string conversao = std::to_string(stoi(T_simbolo[$4.label].valor));
 
@@ -269,8 +258,65 @@ expressao:
 	$$.traducao = $4.traducao + "\t" + $$.label + " = (float)" + $4.label + ";\n";
 	adicionaTabela($$.label, "float", conversao, $$.label);
 }
+|	aritmetica
+{
+	$$.traducao = $1.traducao;
+	$$.label = $1.label;
+}
+;
+
+aritmetica:
+// 	Operadores matemáticos
+	fator
+{
+	$$.traducao = $1.traducao;
+	$$.label = $1.label;
+}
+|	aritmetica SOMA aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+
+	$$.traducao = traducao_expressao($1, "+", $3, $$.label);
+}
+|	aritmetica SUBTRAI aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+
+	$$.traducao = traducao_expressao($1, "-", $3, $$.label);
+}
+|	aritmetica MULTIPLICA aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+
+	$$.traducao = traducao_expressao($1, "*", $3, $$.label);
+}
+| 	aritmetica DIVIDE aritmetica
+{
+	if(std::stof(T_simbolo[$3.label].valor)==0) yyerror("Divisão por zero");
+	
+	$$.label = geraVariavelTemporaria();
+
+	$$.traducao = traducao_expressao($1, "/", $3, $$.label);
+}
+|	SOMA aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+	adicionaTabela($$.label, tipo_simbolo($2.label), "N/A", $$.label);
+
+	$$.traducao = $2.traducao + "\t" + $$.label + " = " + T_simbolo[$2.label].nome_temp + ";\n";
+}
+|	SUBTRAI aritmetica
+{
+	$$.label = geraVariavelTemporaria();
+	adicionaTabela($$.label, tipo_simbolo($2.label), "N/A", $$.label);
+
+	$$.traducao = $2.traducao + "\t" + $$.label + " = " + "-" + " " + T_simbolo[$2.label].nome_temp + ";\n";
+}
+;
+fator:
+
 // Simbolos terminais
-|	NUM
+	NUM
 {
 	$$.label = geraVariavelTemporaria();
 	$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
@@ -288,12 +334,16 @@ expressao:
 	$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
 	adicionaTabela($$.label, "char" ,$1.traducao, $$.label);
 }
+|	STRING
+{
+	//Para fazer
+}
 | 	ID
 {
+	cout << "fui eu" << endl;
 	if(!(testa_simbolo($1.label)))
 	{
-		$$.label = geraVariavelTemporaria();
-		$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+		yyerror("Variável não declarada!");
 	}else
 	{
 		$$.traducao = "";
@@ -310,6 +360,11 @@ expressao:
 	$$.label = geraVariavelTemporaria();
 	$$.traducao = "\t" + $$.label + " = " + "0" + ";\n";
 	adicionaTabela($$.label, "bool", "false", $$.label);
+}
+|	'(' expressao ')'
+{
+	$$.traducao = $2.traducao;
+	$$.label = $2.label;
 };
 
 %%
@@ -323,7 +378,7 @@ string geraVariavelTemporaria()
 	return "TMP_" + std::to_string(tmp_qnt++);
 }
 
-string aritmetica(struct atributos s1, string operador, struct atributos s3, string temp)
+string trad_aritmetica(struct atributos s1, string operador, struct atributos s3, string temp)
 {
 	string traducao = "";
 
@@ -346,7 +401,7 @@ string aritmetica(struct atributos s1, string operador, struct atributos s3, str
 	return traducao;
 }
 
-string relacional(struct atributos s1, string operador, struct atributos s3, string temp)
+string trad_relacional(struct atributos s1, string operador, struct atributos s3, string temp)
 {
 	string traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 
@@ -354,7 +409,7 @@ string relacional(struct atributos s1, string operador, struct atributos s3, str
 	{
 		if (operador == "<" || operador == ">" || operador == "<=" || operador == ">=")
 		{
-			yyerror("Tipo não suporta operações relacionais (<, >, >=, <="); // termina a função
+			yyerror("Tipo não suporta operações relacionais (<, >, >=, <=)"); // termina a função
 		}
 		else
 		{
@@ -441,7 +496,7 @@ string relacional(struct atributos s1, string operador, struct atributos s3, str
 	return traducao;
 }
 
-string logico(struct atributos s1, string operador, struct atributos s3, string temp)
+string trad_logico(struct atributos s1, string operador, struct atributos s3, string temp)
 {
 	string traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + T_simbolo[s1.label].nome_temp + " " + operador + " " + T_simbolo[s3.label].nome_temp + ";\n";
 
@@ -490,15 +545,15 @@ string traducao_expressao(struct atributos s1, string operador, struct atributos
 
 	if(operador == "+"|| operador == "-" || operador == "*" || operador == "/")
 	{
-		return aritmetica(e1, operador, e3, temp);
+		return trad_aritmetica(e1, operador, e3, temp);
 	}
 	if(operador == "&&"|| operador == "||" || operador == "!")
 	{
-		return logico(e1, operador, e3, temp);
+		return trad_logico(e1, operador, e3, temp);
 	}
 	if(operador == ">" || operador == "<" || operador == ">=" || operador == "<=" || operador == "==" || operador == "!=")
 	{
-		return relacional(e1, operador, e3, temp);
+		return trad_relacional(e1, operador, e3, temp);
 	}
 	return traducao;
 }

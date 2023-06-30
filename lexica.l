@@ -10,9 +10,10 @@ unario              "++"|"--"
 
 
 DELIM               {espaco}+
-NUM                 [-]?{digito}+ 
-REAL                {NUM}+("."{NUM}+)?
-CHAR                \'({letra}|{NUM})\'
+NUM                 {digito}+ 
+REAL                {NUM}+("."{NUM}+)?      
+CHAR                \'{letra}|{NUM}\'
+STRING              \"(({letra}|{NUM})+)\"
 ID                  {letra}({letra}|{NUM})*
 %%
 
@@ -51,6 +52,7 @@ ID                  {letra}({letra}|{NUM})*
 {NUM}               {yylval.traducao = yytext; return NUM;}
 {REAL}              {yylval.traducao = yytext; return REAL;}
 {CHAR}              {yylval.traducao = yytext; return CHAR;}
+{STRING}            {yylval.traducao = yytext; return STRING;}
 {ID}	        	{yylval.label = yytext; return ID;}
 
 .	               	*yytext;
