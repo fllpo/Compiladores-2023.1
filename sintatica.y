@@ -96,6 +96,10 @@ comando: expressao ';';
 		{
 			$$.traducao = $3.traducao + "\t" + T_simbolo[$1.label].nome_temp + " = " + T_simbolo[$3.label].nome_temp + ";\n";
 		}
+		else if(T_simbolo[$3.label].tipo == "bool")
+		{
+			yyerror("Variável esperava tipo " + T_simbolo[$1.label].tipo + ", mas recebeu tipo " + T_simbolo[$3.label].tipo);
+		}
 		else if(T_simbolo[$1.label].tipo == "float") // Regra para coerção float
 		{
 			if(T_simbolo[$3.label].tipo == "int") // Regra para coerção int
@@ -104,7 +108,7 @@ comando: expressao ';';
 			}
 			else if(T_simbolo[$3.label].tipo == "char") // Regra para coerção char
 			{
-				yyerror("Expressão não definida para os tipos float e char");
+				yyerror("Variável esperava tipo " + T_simbolo[$1.label].tipo + ", mas recebeu tipo " + T_simbolo[$3.label].tipo);
 			}
 		}
 		else if(T_simbolo[$1.label].tipo == "int") // Regra para coerção int
@@ -117,10 +121,8 @@ comando: expressao ';';
 			{
 				$$.traducao = $3.traducao + "\t" + T_simbolo[$1.label].nome_temp + " = (int) " + T_simbolo[$3.label].nome_temp + ";\n";
 			}
-		}
-		else
-		{
-			yyerror("Não é possível converter " + T_simbolo[$3.label].tipo + " para " + T_simbolo[$1.label].tipo);
+		}else{
+			yyerror("Variável esperava tipo " + T_simbolo[$1.label].tipo + ", mas recebeu tipo " + T_simbolo[$3.label].tipo);
 		}
 		T_simbolo[$1.label].valor = T_simbolo[$3.label].valor;
 	}
@@ -133,7 +135,7 @@ comando: expressao ';';
 		$$.traducao = "";
 		adicionaTabela($2.label, "int", "N/A", var);
 	}else{
-		yyerror("Variáriavel já declarada!");
+		yyerror("Variável já declarada!");
 	}
 }
 |	TIPO_FLOAT ID ';'
@@ -144,7 +146,7 @@ comando: expressao ';';
 		$$.traducao = "";
 		adicionaTabela($2.label, "float", "N/A", var);
 	}else{
-		yyerror("Variáriavel já declarada!");
+		yyerror("Variável já declarada!");
 	}
 }
 |	TIPO_BOOL ID ';'
@@ -155,7 +157,7 @@ comando: expressao ';';
 		$$.traducao = "";
 		adicionaTabela($2.label, "bool", "N/A", var);
 	}else{
-		yyerror("Variáriavel já declarada!");
+		yyerror("Variável já declarada!");
 	}
 }
 |	TIPO_CHAR ID ';'
@@ -166,7 +168,7 @@ comando: expressao ';';
 		$$.traducao = "";
 		adicionaTabela($2.label, "char", "N/A", var);
 	}else{
-		yyerror("Variáriavel já declarada!");
+		yyerror("Variável já declarada!");
 	}
 };
 
@@ -331,7 +333,7 @@ fator:
 |	CHAR
 {
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
+	$$.traducao = "\t" + $$.label + " = " + $1.traducao + "\' ;\n";
 	adicionaTabela($$.label, "char" ,$1.traducao, $$.label);
 }
 |	STRING
@@ -340,7 +342,6 @@ fator:
 }
 | 	ID
 {
-	cout << "fui eu" << endl;
 	if(!(testa_simbolo($1.label)))
 	{
 		yyerror("Variável não declarada!");
@@ -579,7 +580,7 @@ tuple<struct atributos, struct atributos> coercao_tipo(struct atributos s1, stru
 			adicionaTabela(novo.label, "float", std::to_string(stof(T_simbolo[s3.label].valor)), novo.label);
 			get<1>(expr) = novo;
 		}
-		else if(T_simbolo[s1.label].tipo == "char") // Regra para coerção char
+		else if(T_simbolo[s3.label].tipo == "char") // Regra para coerção char
 		{
 			yyerror("Expressão não definida para os tipos float e char");
 		}
