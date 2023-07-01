@@ -48,6 +48,9 @@ ID                  {letra}({letra}|{NUM})*
 "false"             return FALSO;
 "!"                 return NEGAR;
 
+"if"                return IF;
+"while"             return WHILE;
+
 
 {NUM}               {yylval.traducao = yytext; return NUM;}
 {REAL}              {yylval.traducao = yytext; return REAL;}
