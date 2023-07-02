@@ -41,12 +41,14 @@ string tipo_simbolo(string); // Retorna o tipo do símbolo caso esse esteja na t
 string traducao_declaracao(); // Retorna a tradução de todas as declarações do código intermediário, no topo de seu bloco_qtd
 void imprimeTabela(); // Imprime a tabela de símbolos
 
-vector<map<string, simbolo>> T_simbolo(10); // Mapa, identificado pelo nome da variável
+vector<map<string, simbolo>> T_simbolo; // Mapa, identificado pelo nome da variável
+vector<map<string, simbolo>> T_debug;
 
 vector<map<string, simbolo>> teste(10);
 int tmp_qnt = 0;
 int num_linha = 1;
-int bloco_qtd = 0;
+int bloco_qtd = -1;
+int bloco_qtd_debug = -1;
 
 %}
 
@@ -69,10 +71,12 @@ S: TIPO_INT MAIN '(' ')' bloco
 	cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{" << $5.traducao << "\n\treturn 0;\n}" << endl;
 };
 
-bloco: '{' comandos '}'
+bloco: fake '{' comandos '}'
 {	
-	$$.traducao = "\t\n" + traducao_declaracao() + "\n" + $2.traducao;
-	bloco_qtd++;
+	$$.traducao = "\t\n" + traducao_declaracao() + "\n" + $3.traducao;
+	bloco_qtd--;
+	T_debug.push_back(T_simbolo[bloco_qtd+1]);
+	T_simbolo.pop_back();
 };
 
 comandos: comando comandos 			
@@ -84,7 +88,23 @@ comandos: comando comandos
 	$$.traducao = "";
 };
 
-comando: expressao ';';
+fake: 
+{
+	bloco_qtd++;
+	bloco_qtd_debug++;
+	map<string, simbolo> a;
+	T_simbolo.push_back(a);
+	$$.traducao = "";
+};
+
+comando: bloco
+{
+	$$.traducao = $1.traducao;
+}
+|	expressao ';'
+{
+	$$.traducao = "";
+}
 |	ID ATRIBUI expressao ';'
 {
 	if(!(testa_simbolo($1.label)))
@@ -347,7 +367,7 @@ fator:
 |	CHAR
 {
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = "\t" + $$.label + " = " + $1.traducao + "\' ;\n";
+	$$.traducao = "\t" + $$.label + " = " + $1.traducao + " ;\n";
 	adicionaTabela($$.label, "char" ,$1.traducao, $$.label);
 }
 |	STRING
@@ -636,7 +656,7 @@ tuple<struct atributos, struct atributos> coercao_tipo(struct atributos s1, stru
 //retorna True se o símbolo está na tabela e False caso o contrario
 bool testa_simbolo(string nome)
 {
-	for(int i=bloco_qtd;i>0;i--)
+	for(int i=bloco_qtd;i>=0;i--)
 		return T_simbolo[bloco_qtd].count(nome)==1;
 	return false;
 }
@@ -684,10 +704,10 @@ string traducao_declaracao()
 
 void imprimeTabela()
 {
-	for (int i = 0; i < bloco_qtd ;i++)
+	for (int i = 0; i <= bloco_qtd_debug ;i++)
 	{
 		cout << "\n\n\t\tTABELA DE SíMBOLOS | BLOCO " << i <<"\n\nSÍMBOLO\t\tTIPO\tATRIBUIÇÃO\tNOME\n-------------------------------------------------------------\n";
-		for(auto const& [key, val]: T_simbolo[i]) {
+		for(auto const& [key, val]: T_debug[i]) {
 			cout << key << "\t\t" + val.tipo << "\t" + val.valor << "\t\t" + val.nome_temp<<"\n";
 		}
 		cout << "-------------------------------------------------------------\n";
