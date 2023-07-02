@@ -1,12 +1,13 @@
 int main()
 {
-	if()
+	a = 'a';
 	{
-
+		int a;
+		a=1;
+		
 	}
-
-	while()
 	{
-
+		float a;
+		a=2;
 	}
 }
