@@ -32,6 +32,7 @@ void yyerror(string);
 string geraVariavelTemporaria(); // Gera um nome de variável temporária
 string trad_aritmetica(struct atributos, string, struct atributos, string);
 string trad_relacional(struct atributos, string, struct atributos, string);
+string trad_if(struct atributos, string, struct atributos, string);
 string trad_logico(struct atributos, string, struct atributos, string);
 string traducao_expressao(struct atributos, string, struct atributos, string); // Função que retorna a tradução de uma expressao (aritmetica(float - int))
 void adicionaTabela(string, string, string, string); // adiciona um símbolo na tabela, com seu tipo, valor e nome_temp
@@ -44,7 +45,6 @@ void imprimeTabela(); // Imprime a tabela de símbolos
 vector<map<string, simbolo>> T_simbolo; // Mapa, identificado pelo nome da variável
 vector<map<string, simbolo>> T_debug;
 
-vector<map<string, simbolo>> teste(10);
 int tmp_qnt = 0;
 int num_linha = 1;
 int bloco_qtd = -1;
@@ -196,15 +196,20 @@ comando: bloco
 		yyerror("Variável já declarada!");
 	}
 }
-| IF '(' ')' bloco
+;
+
+| IF '(' relacao ')' bloco
 {
+	$$.label = geraVariavelTemporaria();
+	$$.traducao = trad_if($1, "", $3, $$.label);
+}
+
+| WHILE '(' relacao ')' bloco
+{
+	
 	
 }
-| WHILE '(' ')' bloco
-{
-	
-	
-};
+;
 
 
 expressao:
@@ -530,6 +535,103 @@ string trad_relacional(struct atributos s1, string operador, struct atributos s3
 
 	return traducao;
 }
+
+string trad_if(struct atributos s1, string operador, struct atributos s3, string temp)
+{
+	string traducao = s1.traducao + s3.traducao + "\t"+temp + " = " + T_simbolo[bloco_qtd][s1.label].nome_temp + T_simbolo[bloco_qtd][s3.label].nome_temp + ";\n\n\tif(" +temp+ ")\n\t{\n"+ "\n\t}\n";
+
+	if(T_simbolo[bloco_qtd][s1.label].tipo == "bool")
+	{
+		if (operador == "<" || operador == ">" || operador == "<=" || operador == ">=")
+		{
+			yyerror("Tipo não suporta operações relacionais (<, >, >=, <=)"); // termina a função
+		}
+		else
+		{
+			if(operador == "==")
+			{
+				if(T_simbolo[bloco_qtd][s1.label].valor == T_simbolo[bloco_qtd][s3.label].valor)
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else
+				{
+					adicionaTabela(temp, "bool", "false", temp);
+				}
+			}
+			else if (operador == "!=")
+			{
+				if(T_simbolo[bloco_qtd][s1.label].valor != T_simbolo[bloco_qtd][s3.label].valor)
+				{
+					adicionaTabela(temp, "bool", "true", temp);
+				}
+				else
+				{
+					adicionaTabela(temp, "bool", "false", temp);
+				}
+			}	
+		}
+
+	}
+	
+// tipos numéricos e char
+	if (T_simbolo[bloco_qtd][s1.label].tipo == "float" || T_simbolo[bloco_qtd][s1.label].tipo == "int" || T_simbolo[bloco_qtd][s1.label].tipo == "char")
+	{
+		if(operador == "==")
+		{
+			if(T_simbolo[bloco_qtd][s1.label].valor == T_simbolo[bloco_qtd][s3.label].valor)
+			{
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else adicionaTabela(temp, "bool", "false", temp);
+		}
+
+		else if (operador == "!=")
+		{
+			if(T_simbolo[bloco_qtd][s1.label].valor != T_simbolo[bloco_qtd][s3.label].valor)
+			{	
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else adicionaTabela(temp, "bool", "false", temp);
+		}
+		else if(operador == ">")
+		{
+			if(T_simbolo[bloco_qtd][s1.label].valor > T_simbolo[bloco_qtd][s3.label].valor)
+			{	
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else adicionaTabela(temp, "bool", "false", temp);
+		}
+		else if(operador == "<")
+		{
+			if(T_simbolo[bloco_qtd][s1.label].valor < T_simbolo[bloco_qtd][s3.label].valor)
+			{	
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else adicionaTabela(temp, "bool", "false", temp);
+		}
+		else if(operador == "<=")
+		{
+			if(T_simbolo[bloco_qtd][s1.label].valor <= T_simbolo[bloco_qtd][s3.label].valor)
+			{	
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else adicionaTabela(temp, "bool", "false", temp);
+		}
+		else if(operador == ">=")
+		{
+			if(T_simbolo[bloco_qtd][s1.label].valor >= T_simbolo[bloco_qtd][s3.label].valor)
+			{	
+				adicionaTabela(temp, "bool", "true", temp);
+			}
+			else adicionaTabela(temp, "bool", "false", temp);
+		}
+	}
+
+	return traducao;
+}
+
+
 
 string trad_logico(struct atributos s1, string operador, struct atributos s3, string temp)
 {
