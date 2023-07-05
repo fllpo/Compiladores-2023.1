@@ -84,7 +84,9 @@ extern int yydebug;
     FALSO = 285,                   /* FALSO  */
     NEGAR = 286,                   /* NEGAR  */
     IF = 287,                      /* IF  */
-    WHILE = 288                    /* WHILE  */
+    ELSE = 288,                    /* ELSE  */
+    WHILE = 289,                   /* WHILE  */
+    DO = 290                       /* DO  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -123,7 +125,9 @@ extern int yydebug;
 #define FALSO 285
 #define NEGAR 286
 #define IF 287
-#define WHILE 288
+#define ELSE 288
+#define WHILE 289
+#define DO 290
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

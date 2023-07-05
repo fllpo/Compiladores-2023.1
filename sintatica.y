@@ -56,7 +56,7 @@ int bloco_qtd_debug = -1;
 %token TIPO_INT TIPO_FLOAT TIPO_CHAR TIPO_BOOL TIPO_STRING
 %token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE 
 %token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO NEGAR
-%token IF WHILE
+%token IF ELSE WHILE DO
 
 %start S
 
@@ -71,9 +71,9 @@ S: TIPO_INT MAIN '(' ')' bloco
 	cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{" << $5.traducao << "\n\treturn 0;\n}" << endl;
 };
 
-bloco: fake '{' comandos '}'
+bloco: funcao '{' comandos '}'
 {	
-	$$.traducao = "\t\n" + traducao_declaracao() + "\n" + $3.traducao;
+	$$.traducao = "\t\n" + $1.traducao + traducao_declaracao() + $3.traducao + "\t}";
 	bloco_qtd--;
 	T_debug.push_back(T_simbolo[bloco_qtd+1]);
 	T_simbolo.pop_back();
@@ -88,18 +88,55 @@ comandos: comando comandos
 	$$.traducao = "";
 };
 
-fake: 
+funcao:	
 {
 	bloco_qtd++;
 	bloco_qtd_debug++;
 	map<string, simbolo> a;
 	T_simbolo.push_back(a);
 	$$.traducao = "";
-};
+}
+| IF '(' relacao ')' //FIXME
+{
+	bloco_qtd++;
+	bloco_qtd_debug++;
+	map<string, simbolo> a;
+	T_simbolo.push_back(a);
+	$$.traducao = $3.traducao + "\n\tif(" + $3.label + ")" + "\n\t{\n";
+
+}
+| IF '(' relacao ')' ELSE funcao //TODO
+{
+	bloco_qtd++;
+	bloco_qtd_debug++;
+	map<string, simbolo> a;
+	T_simbolo.push_back(a);
+	$$.traducao = "";
+	cout<<$$.label;
+
+}
+| WHILE '(' relacao ')' //FIXME
+{
+	bloco_qtd++;
+	bloco_qtd_debug++;
+	map<string, simbolo> a;
+	T_simbolo.push_back(a);
+	$$.traducao = $3.traducao + "\n\twhile(" + $3.label + ")" + "\n\t{\n";
+}
+| DO funcao WHILE '(' relacao ')' //TODO
+{
+	bloco_qtd++;
+	bloco_qtd_debug++;
+	map<string, simbolo> a;
+	T_simbolo.push_back(a);
+	$$.traducao = "";
+}
+;
 
 comando: bloco
-{
+{	
 	$$.traducao = $1.traducao;
+	
 }
 |	expressao ';'
 {
@@ -111,8 +148,7 @@ comando: bloco
 	{
 		string var = geraVariavelTemporaria();
 		$$.traducao = $3.traducao + "\t" + var + " = " + T_simbolo[bloco_qtd][$3.label].nome_temp + ";\n";
-		adicionaTabela($1.label, T_simbolo[bloco_qtd][$3.label].tipo, T_simbolo[bloco_qtd][$3.label].valor, var);
-		
+		adicionaTabela($1.label, T_simbolo[bloco_qtd][$3.label].tipo, T_simbolo[bloco_qtd][$3.label].valor, var); 
 	}
 	else
 	{
@@ -197,20 +233,6 @@ comando: bloco
 	}
 }
 ;
-
-| IF '(' relacao ')' bloco
-{
-	$$.label = geraVariavelTemporaria();
-	$$.traducao = trad_if($1, "", $3, $$.label);
-}
-
-| WHILE '(' relacao ')' bloco
-{
-	
-	
-}
-;
-
 
 expressao:
 // 	Operadores lógicos
@@ -538,7 +560,7 @@ string trad_relacional(struct atributos s1, string operador, struct atributos s3
 
 string trad_if(struct atributos s1, string operador, struct atributos s3, string temp)
 {
-	string traducao = s1.traducao + s3.traducao + "\t"+temp + " = " + T_simbolo[bloco_qtd][s1.label].nome_temp + T_simbolo[bloco_qtd][s3.label].nome_temp + ";\n\n\tif(" +temp+ ")\n\t{\n"+ "\n\t}\n";
+	string traducao = s1.traducao + s3.traducao + "\t"+temp + " = " + T_simbolo[bloco_qtd][s1.label].nome_temp + T_simbolo[bloco_qtd][s3.label].nome_temp + ";\n\n\tif(" + temp + ")\n\t{\n" + "\n\t}\n";
 
 	if(T_simbolo[bloco_qtd][s1.label].tipo == "bool")
 	{
@@ -806,7 +828,7 @@ string traducao_declaracao()
 
 void imprimeTabela()
 {
-	for (int i = 0; i <= bloco_qtd_debug ;i++)
+	for (int i = 0; i <= bloco_qtd_debug; i++)
 	{
 		cout << "\n\n\t\tTABELA DE SíMBOLOS | BLOCO " << i <<"\n\nSÍMBOLO\t\tTIPO\tATRIBUIÇÃO\tNOME\n-------------------------------------------------------------\n";
 		for(auto const& [key, val]: T_debug[i]) {
