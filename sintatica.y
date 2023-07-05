@@ -112,8 +112,6 @@ funcao:
 	map<string, simbolo> a;
 	T_simbolo.push_back(a);
 	$$.traducao = "";
-	cout<<$$.label;
-
 }
 | WHILE '(' relacao ')' //FIXME
 {
