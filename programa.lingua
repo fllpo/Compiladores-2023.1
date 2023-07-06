@@ -4,7 +4,7 @@ int main()
 	while (i<10)
 	{
 		b=2;
-		
+		i = i+1;
 	}
-	d=3;
+	b = 3;
 }
