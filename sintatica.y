@@ -73,7 +73,7 @@ S: TIPO_INT MAIN '(' ')' bloco
 
 bloco: blocofuncao '{' comandos '}'
 {	
-	$$.traducao = "\t\n" + $1.traducao + traducao_declaracao() + $3.traducao;
+	$$.traducao = "\t\n" + $1.traducao + traducao_declaracao() + "\n" + $3.traducao;
 	bloco_qtd--;
 	T_debug.push_back(T_simbolo[bloco_qtd+1]);
 	T_simbolo.pop_back();
@@ -96,26 +96,6 @@ blocofuncao:
 	map<string, simbolo> a;
 	T_simbolo.push_back(a);
 	$$.traducao = "";
-}
-| IF '(' relacao ')' blocofuncao
-{
-	$$.traducao = $3.traducao + "\n\tif(" + $3.label + ")\n\t{\n";
-}
-| IF '(' relacao ')' blocofuncao ELSE blocofuncao //TODO
-{
-	$$.traducao = "";
-}
-| WHILE '(' relacao ')' blocofuncao
-{
-	$$.traducao = $3.traducao + "\n\twhile(" + $3.label + ")" + "\n\t{\n";
-}
-| DO blocofuncao WHILE '(' relacao ')' blocofuncao //TODO
-{
-	$$.traducao = "";
-}
-| FOR '(' ';' relacao ';' ')' blocofuncao//TODO
-{
-	$$.traducao = $3.traducao + "\n\tfor(" + $3.label + ")" + "\n\t{\n";
 }
 ;
 
@@ -171,6 +151,28 @@ comando: bloco
 		}
 		T_simbolo[bloco_qtd][$1.label].valor = T_simbolo[bloco_qtd][$3.label].valor;
 	}
+}
+| IF '(' expressao ')' bloco
+{
+	string neg = geraVariavelTemporaria();
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\tif(" + neg + ")\n\t" + "goto: " + "label gerada" + $5.traducao + "\n\tLabel gerada:" + "\n"; //Fazer gerador de label
+}
+| IF '(' expressao ')' bloco ELSE bloco //TODO
+{
+	$$.traducao = "";
+}
+| WHILE '(' expressao ')' bloco
+{
+	string neg = geraVariavelTemporaria();
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + "\n\tlabel de loop:\n\tif(" + neg + ")\n\t" + "goto: " + "label gerada" + $5.traducao + "\n\tgoto: label de loop\n\tLabel gerada:" + "\n";
+}
+| DO bloco WHILE '(' expressao ')' bloco //TODO
+{
+	$$.traducao = "";
+}
+| FOR '(' ';' expressao ';' ')' bloco//TODO
+{
+	$$.traducao = $3.traducao + "\n\tfor(" + $3.label + ")" + "\n\t{\n";
 }
 |	TIPO_INT ID ';'
 {
