@@ -161,21 +161,28 @@ comando: bloco
 	//string saida = geraLabel();
 	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n"; //Fazer gerador de label
 	
-	if(T_simbolo[bloco_qtd][$3.label].valor=="true"){
-		adicionaTabela(neg, T_simbolo[bloco_qtd][$3.label].tipo, "false", neg);
-	}
+	if(T_simbolo[bloco_qtd][$3.label].valor=="true") adicionaTabela(neg, T_simbolo[bloco_qtd][$3.label].tipo, "false", neg);
 	else adicionaTabela(neg, T_simbolo[bloco_qtd][$3.label].tipo, "true", neg);
 	
 }
 | IF '(' expressao ')' bloco ELSE bloco //TODO
 {
-	$$.traducao = "";
-}
-| WHILE '(' expressao ')' bloco //TODO
-{
 	string neg = geraVariavelTemporaria();
 	string lbl = geraLabel();
-	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + "\n\n\t" + lbl + ":\n\n\tif(" + neg + ") " + "goto " + lbl +";"+ $5.traducao + "\n\tgoto" + lbl +" label de loop\n\tLabel gerada:" + "\n";
+	//string saida = geraLabel();
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n"; //Fazer gerador de label
+	
+	if(T_simbolo[bloco_qtd][$3.label].valor=="true") adicionaTabela(neg, T_simbolo[bloco_qtd][$3.label].tipo, "false", neg);
+	else adicionaTabela(neg, T_simbolo[bloco_qtd][$3.label].tipo, "true", neg);
+}
+| WHILE '(' expressao ')' bloco //FIXME
+{
+	string var = geraVariavelTemporaria();
+	string lbl = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = "\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = " + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\tgoto " + lbl +";\n\n\t" + saida+ ":\n";
+	adicionaTabela(var, T_simbolo[bloco_qtd][$3.label].tipo, T_simbolo[bloco_qtd][$3.label].valor, var);
+	adicionaTabela($1.label, T_simbolo[bloco_qtd][$1.label].tipo, T_simbolo[bloco_qtd][$1.label].valor, T_simbolo[bloco_qtd][$1.label].nome_temp); // em (i<10)   i deve estar no bloco 0 para ser possivel i++
 }
 | DO bloco WHILE '(' expressao ')' bloco //TODO
 {
@@ -183,7 +190,7 @@ comando: bloco
 }
 | FOR '(' ';' expressao ';' ')' bloco //TODO
 {
-	$$.traducao = $3.traducao + "\n\tfor(" + $3.label + ")" + "\n\t{\n";
+	//$$.traducao = $3.traducao + "\n\tfor(" + $3.label + ")" + "\n\t{\n";
 }
 |	TIPO_INT ID ';'
 {
