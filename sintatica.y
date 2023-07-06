@@ -30,6 +30,7 @@ int yylex(void);
 void yyerror(string);
 
 string geraVariavelTemporaria(); // Gera um nome de variável temporária
+string geraLabel();
 string trad_aritmetica(struct atributos, string, struct atributos, string);
 string trad_relacional(struct atributos, string, struct atributos, string);
 string trad_if(struct atributos, string, struct atributos, string);
@@ -49,6 +50,7 @@ int tmp_qnt = 0;
 int num_linha = 1;
 int bloco_qtd = -1;
 int bloco_qtd_debug = -1;
+int label_qnt=0;
 
 %}
 
@@ -155,22 +157,31 @@ comando: bloco
 | IF '(' expressao ')' bloco
 {
 	string neg = geraVariavelTemporaria();
-	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\tif(" + neg + ")\n\t" + "goto: " + "label gerada" + $5.traducao + "\n\tLabel gerada:" + "\n"; //Fazer gerador de label
+	string lbl = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + "; else goto "+saida+";\n\n\t" + lbl + ":" + $5.traducao + "\n\t" + saida +":\n"; //Fazer gerador de label
+	
+	if(T_simbolo[bloco_qtd][$3.label].valor=="true"){
+		adicionaTabela(neg, T_simbolo[bloco_qtd][$3.label].tipo, "false", neg);
+	}
+	else adicionaTabela(neg, T_simbolo[bloco_qtd][$3.label].tipo, "true", neg);
+	
 }
 | IF '(' expressao ')' bloco ELSE bloco //TODO
 {
 	$$.traducao = "";
 }
-| WHILE '(' expressao ')' bloco
+| WHILE '(' expressao ')' bloco //TODO
 {
 	string neg = geraVariavelTemporaria();
-	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + "\n\tlabel de loop:\n\tif(" + neg + ")\n\t" + "goto: " + "label gerada" + $5.traducao + "\n\tgoto: label de loop\n\tLabel gerada:" + "\n";
+	string lbl = geraLabel();
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + "\n\n\t" + lbl + ":\n\n\tif(" + neg + ") " + "goto " + lbl +";"+ $5.traducao + "\n\tgoto" + lbl +" label de loop\n\tLabel gerada:" + "\n";
 }
 | DO bloco WHILE '(' expressao ')' bloco //TODO
 {
 	$$.traducao = "";
 }
-| FOR '(' ';' expressao ';' ')' bloco//TODO
+| FOR '(' ';' expressao ';' ')' bloco //TODO
 {
 	$$.traducao = $3.traducao + "\n\tfor(" + $3.label + ")" + "\n\t{\n";
 }
@@ -425,6 +436,11 @@ int yyparse();
 string geraVariavelTemporaria()
 {
 	return "TMP_" + to_string(tmp_qnt++);
+}
+
+string geraLabel()
+{
+	return "L" + to_string(label_qnt++);
 }
 
 string trad_aritmetica(struct atributos s1, string operador, struct atributos s3, string temp)
