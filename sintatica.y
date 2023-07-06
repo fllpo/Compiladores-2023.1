@@ -158,8 +158,8 @@ comando: bloco
 {
 	string neg = geraVariavelTemporaria();
 	string lbl = geraLabel();
-	string saida = geraLabel();
-	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + "; else goto "+saida+";\n\n\t" + lbl + ":" + $5.traducao + "\n\t" + saida +":\n"; //Fazer gerador de label
+	//string saida = geraLabel();
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n"; //Fazer gerador de label
 	
 	if(T_simbolo[bloco_qtd][$3.label].valor=="true"){
 		adicionaTabela(neg, T_simbolo[bloco_qtd][$3.label].tipo, "false", neg);

@@ -6,6 +6,7 @@ int main()
 	{
 		b=1;
 	}
+	continua=20;
 	if(0==0){
 		c=3;
 	}

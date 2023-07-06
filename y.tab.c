@@ -1460,8 +1460,8 @@ yyreduce:
 {
 	string neg = geraVariavelTemporaria();
 	string lbl = geraLabel();
-	string saida = geraLabel();
-	yyval.traducao = yyvsp[-2].traducao + "\t" + neg + " = !" + yyvsp[-2].label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + "; else goto "+saida+";\n\n\t" + lbl + ":" + yyvsp[0].traducao + "\n\t" + saida +":\n"; //Fazer gerador de label
+	//string saida = geraLabel();
+	yyval.traducao = yyvsp[-2].traducao + "\t" + neg + " = !" + yyvsp[-2].label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + yyvsp[0].traducao + "\n\t" + lbl +":\n"; //Fazer gerador de label
 	
 	if(T_simbolo[bloco_qtd][yyvsp[-2].label].valor=="true"){
 		adicionaTabela(neg, T_simbolo[bloco_qtd][yyvsp[-2].label].tipo, "false", neg);
