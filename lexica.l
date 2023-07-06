@@ -52,6 +52,7 @@ ID                  {letra}({letra}|{NUM})*
 "else"              return ELSE;
 "while"             return WHILE;
 "do"                return DO;
+"for"               return FOR;
 
 
 {NUM}               {yylval.traducao = yytext; return NUM;}

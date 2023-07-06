@@ -56,7 +56,7 @@ int bloco_qtd_debug = -1;
 %token TIPO_INT TIPO_FLOAT TIPO_CHAR TIPO_BOOL TIPO_STRING
 %token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE 
 %token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO NEGAR
-%token IF ELSE WHILE DO
+%token IF ELSE WHILE DO FOR
 
 %start S
 
@@ -71,9 +71,9 @@ S: TIPO_INT MAIN '(' ')' bloco
 	cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{" << $5.traducao << "\n\treturn 0;\n}" << endl;
 };
 
-bloco: funcao '{' comandos '}'
+bloco: blocofuncao '{' comandos '}'
 {	
-	$$.traducao = "\t\n" + $1.traducao + traducao_declaracao() + $3.traducao + "\t}";
+	$$.traducao = "\t\n" + $1.traducao + traducao_declaracao() + $3.traducao;
 	bloco_qtd--;
 	T_debug.push_back(T_simbolo[bloco_qtd+1]);
 	T_simbolo.pop_back();
@@ -86,9 +86,10 @@ comandos: comando comandos
 | 
 {
 	$$.traducao = "";
-};
+}
+;
 
-funcao:	
+blocofuncao:	
 {
 	bloco_qtd++;
 	bloco_qtd_debug++;
@@ -96,45 +97,31 @@ funcao:
 	T_simbolo.push_back(a);
 	$$.traducao = "";
 }
-| IF '(' relacao ')' //FIXME
+| IF '(' relacao ')' blocofuncao
 {
-	bloco_qtd++;
-	bloco_qtd_debug++;
-	map<string, simbolo> a;
-	T_simbolo.push_back(a);
-	$$.traducao = $3.traducao + "\n\tif(" + $3.label + ")" + "\n\t{\n";
-
+	$$.traducao = $3.traducao + "\n\tif(" + $3.label + ")\n\t{\n";
 }
-| IF '(' relacao ')' ELSE funcao //TODO
+| IF '(' relacao ')' blocofuncao ELSE blocofuncao //TODO
 {
-	bloco_qtd++;
-	bloco_qtd_debug++;
-	map<string, simbolo> a;
-	T_simbolo.push_back(a);
 	$$.traducao = "";
 }
-| WHILE '(' relacao ')' //FIXME
+| WHILE '(' relacao ')' blocofuncao
 {
-	bloco_qtd++;
-	bloco_qtd_debug++;
-	map<string, simbolo> a;
-	T_simbolo.push_back(a);
 	$$.traducao = $3.traducao + "\n\twhile(" + $3.label + ")" + "\n\t{\n";
 }
-| DO funcao WHILE '(' relacao ')' //TODO
+| DO blocofuncao WHILE '(' relacao ')' blocofuncao //TODO
 {
-	bloco_qtd++;
-	bloco_qtd_debug++;
-	map<string, simbolo> a;
-	T_simbolo.push_back(a);
 	$$.traducao = "";
+}
+| FOR '(' ';' relacao ';' ')' blocofuncao//TODO
+{
+	$$.traducao = $3.traducao + "\n\tfor(" + $3.label + ")" + "\n\t{\n";
 }
 ;
 
 comando: bloco
 {	
-	$$.traducao = $1.traducao;
-	
+	$$.traducao = $1.traducao + "\t}\n";
 }
 |	expressao ';'
 {
@@ -555,103 +542,6 @@ string trad_relacional(struct atributos s1, string operador, struct atributos s3
 
 	return traducao;
 }
-
-string trad_if(struct atributos s1, string operador, struct atributos s3, string temp)
-{
-	string traducao = s1.traducao + s3.traducao + "\t"+temp + " = " + T_simbolo[bloco_qtd][s1.label].nome_temp + T_simbolo[bloco_qtd][s3.label].nome_temp + ";\n\n\tif(" + temp + ")\n\t{\n" + "\n\t}\n";
-
-	if(T_simbolo[bloco_qtd][s1.label].tipo == "bool")
-	{
-		if (operador == "<" || operador == ">" || operador == "<=" || operador == ">=")
-		{
-			yyerror("Tipo não suporta operações relacionais (<, >, >=, <=)"); // termina a função
-		}
-		else
-		{
-			if(operador == "==")
-			{
-				if(T_simbolo[bloco_qtd][s1.label].valor == T_simbolo[bloco_qtd][s3.label].valor)
-				{
-					adicionaTabela(temp, "bool", "true", temp);
-				}
-				else
-				{
-					adicionaTabela(temp, "bool", "false", temp);
-				}
-			}
-			else if (operador == "!=")
-			{
-				if(T_simbolo[bloco_qtd][s1.label].valor != T_simbolo[bloco_qtd][s3.label].valor)
-				{
-					adicionaTabela(temp, "bool", "true", temp);
-				}
-				else
-				{
-					adicionaTabela(temp, "bool", "false", temp);
-				}
-			}	
-		}
-
-	}
-	
-// tipos numéricos e char
-	if (T_simbolo[bloco_qtd][s1.label].tipo == "float" || T_simbolo[bloco_qtd][s1.label].tipo == "int" || T_simbolo[bloco_qtd][s1.label].tipo == "char")
-	{
-		if(operador == "==")
-		{
-			if(T_simbolo[bloco_qtd][s1.label].valor == T_simbolo[bloco_qtd][s3.label].valor)
-			{
-				adicionaTabela(temp, "bool", "true", temp);
-			}
-			else adicionaTabela(temp, "bool", "false", temp);
-		}
-
-		else if (operador == "!=")
-		{
-			if(T_simbolo[bloco_qtd][s1.label].valor != T_simbolo[bloco_qtd][s3.label].valor)
-			{	
-				adicionaTabela(temp, "bool", "true", temp);
-			}
-			else adicionaTabela(temp, "bool", "false", temp);
-		}
-		else if(operador == ">")
-		{
-			if(T_simbolo[bloco_qtd][s1.label].valor > T_simbolo[bloco_qtd][s3.label].valor)
-			{	
-				adicionaTabela(temp, "bool", "true", temp);
-			}
-			else adicionaTabela(temp, "bool", "false", temp);
-		}
-		else if(operador == "<")
-		{
-			if(T_simbolo[bloco_qtd][s1.label].valor < T_simbolo[bloco_qtd][s3.label].valor)
-			{	
-				adicionaTabela(temp, "bool", "true", temp);
-			}
-			else adicionaTabela(temp, "bool", "false", temp);
-		}
-		else if(operador == "<=")
-		{
-			if(T_simbolo[bloco_qtd][s1.label].valor <= T_simbolo[bloco_qtd][s3.label].valor)
-			{	
-				adicionaTabela(temp, "bool", "true", temp);
-			}
-			else adicionaTabela(temp, "bool", "false", temp);
-		}
-		else if(operador == ">=")
-		{
-			if(T_simbolo[bloco_qtd][s1.label].valor >= T_simbolo[bloco_qtd][s3.label].valor)
-			{	
-				adicionaTabela(temp, "bool", "true", temp);
-			}
-			else adicionaTabela(temp, "bool", "false", temp);
-		}
-	}
-
-	return traducao;
-}
-
-
 
 string trad_logico(struct atributos s1, string operador, struct atributos s3, string temp)
 {
