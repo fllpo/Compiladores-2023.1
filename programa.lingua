@@ -1,10 +1,10 @@
 int main()
 {
-	i=1;
-	while (i<10)
+	TMP_2=1;
+	while (TMP_2<10)
 	{
 		b=2;
-		i = i+1;
+		i = -TMP_2+1;
 	}
 	b = 3;
 }

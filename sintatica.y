@@ -56,7 +56,7 @@ int num_linha = 1;
 int bloco_qtd = -1;
 int bloco_qtd_debug = -1;
 int label_qnt=0;
-
+string declaracoes = "";
 %}
 
 %token MAIN ID NUM REAL CHAR STRING FIM ERROR
@@ -75,12 +75,13 @@ int label_qnt=0;
 
 S: TIPO_INT MAIN '(' ')' bloco
 {
-	cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{" << $5.traducao << "\n\treturn 0;\n}" << endl;
+	cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{" << declaracoes + $5.traducao << "\n\treturn 0;\n}" << endl;
 };
 
 bloco: blocofuncao '{' comandos '}'
 {	
-	$$.traducao = "\t\n" + $1.traducao + traducao_declaracao() + "\n" + $3.traducao;
+	declaracoes = declaracoes+ traducao_declaracao();
+	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
 	T_debug.push_back(T_simbolo[bloco_qtd]);
 	bloco_qtd--;
 	T_simbolo.pop_back();
@@ -430,6 +431,8 @@ aritmetica:
 	adicionaTabela($$.label, $2.tipo, "N/A", $$.label);
 
 	$$.traducao = $2.traducao + "\t" + $$.label + " = " + $2.label + ";\n";
+	$$.tipo = $2.tipo;
+	$$.valor = $2.valor;
 }
 |	SUBTRAI aritmetica
 {
@@ -437,6 +440,8 @@ aritmetica:
 	adicionaTabela($$.label, $2.tipo, "N/A", $$.label);
 
 	$$.traducao = $2.traducao + "\t" + $$.label + " = " + "-" + " " + $2.label + ";\n";
+	$$.tipo = $2.tipo;
+	$$.valor = "-" + $2.valor;
 }
 ;
 fator:
@@ -823,7 +828,7 @@ string traducao_declaracao()
 		}
 		traducao = traducao + "\t"+ val.tipo + " " + val.nome_temp + ";\n";
 	}
-	return "";
+	return traducao;
 }
 
 void imprimeTabela()
