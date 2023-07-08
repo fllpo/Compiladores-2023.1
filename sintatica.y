@@ -169,20 +169,20 @@ comando: bloco
 {
 	string neg = geraVariavelTemporaria();
 	string lbl = geraLabel();
-	//string saida = geraLabel();
 	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n"; //Fazer gerador de label
 	
 	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
 	else adicionaTabela(neg, $3.tipo, "true", neg);
 	
 }
-| IF '(' expressao ')' bloco ELSE bloco //TODO
+| IF '(' expressao ')' bloco ELSE bloco
 {
 	string neg = geraVariavelTemporaria();
 	string lbl = geraLabel();
-	//string saida = geraLabel();
-	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n"; //Fazer gerador de label
-	
+	string els = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t"+ lbl + ":" + $5.traducao + "\n\tgoto " + saida + ";" + "\n\n\t"+ els + ":" + $7.traducao + "\n\tgoto " + saida + ";" + "\n\n\t" + saida + ":" + "\n\n"; //Fazer gerador de label
+
 	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
 	else adicionaTabela(neg, $3.tipo, "true", neg);
 }
@@ -191,13 +191,20 @@ comando: bloco
 	string var = geraVariavelTemporaria();
 	string lbl = geraLabel();
 	string saida = geraLabel();
-	$$.traducao = "\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = !" + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\tgoto " + lbl +";\n\n\t" + saida+ ":\n";
-	adicionaTabela(var, $3.tipo, $3.valor, var);
-	adicionaTabela($1.label, $1.tipo, $1.valor, $1.label); // em (i<10)   i deve estar no bloco 0 para ser possivel i++
+	$$.traducao = "\n\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = " + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n\n";
+	
+	adicionaTabela(var, $3.tipo, T_simbolo[bloco_qtd][$3.label].valor, var);
+
 }
-| DO bloco WHILE '(' expressao ')' bloco //TODO
+| DO bloco WHILE '(' expressao ')' ';' //FIXME
 {
-	$$.traducao = "";
+	string var = geraVariavelTemporaria();
+	string lbl = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = "\t" + lbl + ":" +$2.traducao + "\n" + $5.traducao + "\t" + var + " = " + $5.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n\n";
+	
+	adicionaTabela(var, $5.tipo, T_simbolo[bloco_qtd][$5.label].valor, var);
+
 }
 | FOR '(' ';' expressao ';' ')' bloco //TODO
 {
@@ -799,7 +806,6 @@ void adicionaTabela(string nome, string tipo, string valor, string novo_nome)
 		novo.nome_temp = novo_nome;
 		novo.valor = valor;
 		T_simbolo[bloco_qtd][nome] = novo;
-		
 	}
 }
 

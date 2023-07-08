@@ -1,10 +1,8 @@
 int main()
 {
-	TMP_2=1;
-	while (TMP_2<10)
-	{
-		b=2;
-		i = -TMP_2+1;
+	
+	do{
+		b=1;
 	}
-	b = 3;
+	while(1<3);
 }
