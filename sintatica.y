@@ -132,7 +132,7 @@ comando: bloco
 		//cout << bloc<<endl;
 		if($1.tipo == $3.tipo)
 		{
-			$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp; + " = " + $3.label + ";\n";
+			$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = " + $3.label + ";\n";
 		}
 		else if($3.tipo == "bool")
 		{
@@ -142,7 +142,7 @@ comando: bloco
 		{
 			if($3.tipo == "int") // Regra para coerção int
 			{
-				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp; + " = (float) " + $3.label + ";\n";
+				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = (float) " + $3.label + ";\n";
 			}
 			else if($3.tipo == "char") // Regra para coerção char
 			{
@@ -153,11 +153,11 @@ comando: bloco
 		{
 			if($3.tipo == "float") // Regra para coerção float
 			{
-				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp; + " = (int) " + $3.label + ";\n";
+				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = (int) " + $3.label + ";\n";
 			}
 			else if($3.tipo == "char") // Regra para coerção de char
 			{
-				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp; + " = (int) " + $3.label + ";\n";
+				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = (int) " + $3.label + ";\n";
 			}
 		}else{
 			yyerror("Variável esperava tipo " + $1.tipo + ", mas recebeu tipo " + $3.tipo);
@@ -169,7 +169,7 @@ comando: bloco
 {
 	string neg = geraVariavelTemporaria();
 	string lbl = geraLabel();
-	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n"; //Fazer gerador de label
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n";
 	
 	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
 	else adicionaTabela(neg, $3.tipo, "true", neg);
@@ -179,9 +179,8 @@ comando: bloco
 {
 	string neg = geraVariavelTemporaria();
 	string lbl = geraLabel();
-	string els = geraLabel();
 	string saida = geraLabel();
-	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t"+ lbl + ":" + $5.traducao + "\n\tgoto " + saida + ";" + "\n\n\t"+ els + ":" + $7.traducao + "\n\tgoto " + saida + ";" + "\n\n\t" + saida + ":" + "\n\n"; //Fazer gerador de label
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\t" + $5.traducao + "\tgoto " + saida + ";\n\t" + lbl + ":\t" + $7.traducao + "\n\t" + saida + ":" + "\n";
 
 	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
 	else adicionaTabela(neg, $3.tipo, "true", neg);
@@ -191,7 +190,7 @@ comando: bloco
 	string var = geraVariavelTemporaria();
 	string lbl = geraLabel();
 	string saida = geraLabel();
-	$$.traducao = "\n\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = " + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n\n";
+	$$.traducao = "\n\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = !" + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
 	
 	adicionaTabela(var, $3.tipo, T_simbolo[bloco_qtd][$3.label].valor, var);
 
@@ -201,7 +200,7 @@ comando: bloco
 	string var = geraVariavelTemporaria();
 	string lbl = geraLabel();
 	string saida = geraLabel();
-	$$.traducao = "\t" + lbl + ":" +$2.traducao + "\n" + $5.traducao + "\t" + var + " = " + $5.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n\n";
+	$$.traducao = "\t" + lbl + ":" +$2.traducao + "\n" + $5.traducao + "\t" + var + " = !" + $5.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
 	
 	adicionaTabela(var, $5.tipo, T_simbolo[bloco_qtd][$5.label].valor, var);
 
