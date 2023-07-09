@@ -64,7 +64,7 @@ string declaracoes = "";
 %token TIPO_INT TIPO_FLOAT TIPO_CHAR TIPO_BOOL TIPO_STRING
 %token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE 
 %token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO NEGAR
-%token IF ELSE WHILE DO FOR
+%token IF ELSE WHILE DO FOR CONTINUE BREAK
 
 %start S
 
@@ -80,6 +80,22 @@ S: TIPO_INT MAIN '(' ')' bloco
 };
 
 bloco: blocofuncao '{' comandos '}'
+{	
+	declaracoes = declaracoes + traducao_declaracao();
+	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
+	T_debug.push_back(T_simbolo[bloco_qtd]);
+	bloco_qtd--;
+	T_simbolo.pop_back();
+}
+|	blocofuncao '{' comandos CONTINUE comandos '}'
+{	
+	declaracoes = declaracoes + traducao_declaracao();
+	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
+	T_debug.push_back(T_simbolo[bloco_qtd]);
+	bloco_qtd--;
+	T_simbolo.pop_back();
+}
+|	blocofuncao '{' comandos BREAK comandos '}'
 {	
 	declaracoes = declaracoes + traducao_declaracao();
 	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
@@ -887,7 +903,7 @@ string traducao_declaracao()
 		}
 		if(val.tipo=="string"){			
 			
-			traducao = traducao + "\t"+ "char" + " " + val.nome_temp + "["+ to_string(size(val.valor)-2)+ "]" +";\n";
+			traducao = traducao + "\t"+ "char" + " " + val.nome_temp + "["+ to_string(size(val.valor)-1)+ "]" +";\n";
 			continue;
 		}
 		

@@ -87,7 +87,9 @@ extern int yydebug;
     ELSE = 288,                    /* ELSE  */
     WHILE = 289,                   /* WHILE  */
     DO = 290,                      /* DO  */
-    FOR = 291                      /* FOR  */
+    FOR = 291,                     /* FOR  */
+    CONTINUE = 292,                /* CONTINUE  */
+    BREAK = 293                    /* BREAK  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -130,6 +132,8 @@ extern int yydebug;
 #define WHILE 289
 #define DO 290
 #define FOR 291
+#define CONTINUE 292
+#define BREAK 293
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

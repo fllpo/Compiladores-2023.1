@@ -29,7 +29,7 @@ ID                  {letra}({letra}|{NUM})*
 "bool"              return TIPO_BOOL;
 "string"            return TIPO_STRING;
 
-[(){}[\];,:]	        return *yytext;
+[(){}[\];,:]	    return *yytext;
 
 "="                 return ATRIBUI;
 "+"                 return SOMA;
@@ -53,6 +53,8 @@ ID                  {letra}({letra}|{NUM})*
 "while"             return WHILE;
 "do"                return DO;
 "for"               return FOR;
+"continue"          return CONTINUE;
+"break"             return BREAK;
 
 
 {NUM}               {yylval.traducao = yytext; return NUM;}
