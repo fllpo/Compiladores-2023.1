@@ -205,7 +205,7 @@ comando: bloco
 	adicionaTabela(var, $5.tipo, T_simbolo[bloco_qtd][$5.label].valor, var);
 
 }
-| FOR '(' fator ':' fator ')' bloco //TODO
+| FOR '(' fator ':' fator ')' bloco
 {
 	string var = geraVariavelTemporaria();
 	string var2 = geraVariavelTemporaria();
