@@ -29,7 +29,7 @@ ID                  {letra}({letra}|{NUM})*
 "bool"              return TIPO_BOOL;
 "string"            return TIPO_STRING;
 
-[(){}[\];,]	        return *yytext;
+[(){}[\];,:]	        return *yytext;
 
 "="                 return ATRIBUI;
 "+"                 return SOMA;

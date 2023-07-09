@@ -80,7 +80,7 @@ S: TIPO_INT MAIN '(' ')' bloco
 
 bloco: blocofuncao '{' comandos '}'
 {	
-	declaracoes = declaracoes+ traducao_declaracao();
+	declaracoes = declaracoes + traducao_declaracao();
 	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
 	T_debug.push_back(T_simbolo[bloco_qtd]);
 	bloco_qtd--;
@@ -185,17 +185,17 @@ comando: bloco
 	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
 	else adicionaTabela(neg, $3.tipo, "true", neg);
 }
-| WHILE '(' expressao ')' bloco //FIXME
+| WHILE '(' expressao ')' bloco
 {
 	string var = geraVariavelTemporaria();
 	string lbl = geraLabel();
 	string saida = geraLabel();
-	$$.traducao = "\n\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = !" + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
+	$$.traducao = "\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = !" + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
 	
 	adicionaTabela(var, $3.tipo, T_simbolo[bloco_qtd][$3.label].valor, var);
 
 }
-| DO bloco WHILE '(' expressao ')' ';' //FIXME
+| DO bloco WHILE '(' expressao ')' ';'
 {
 	string var = geraVariavelTemporaria();
 	string lbl = geraLabel();
@@ -205,9 +205,26 @@ comando: bloco
 	adicionaTabela(var, $5.tipo, T_simbolo[bloco_qtd][$5.label].valor, var);
 
 }
-| FOR '(' ';' expressao ';' ')' bloco //TODO
+| FOR '(' fator ':' fator ')' bloco //TODO
 {
-	//$$.traducao = $3.traducao + "\n\tfor(" + $3.label + ")" + "\n\t{\n";
+	string var = geraVariavelTemporaria();
+	string var2 = geraVariavelTemporaria();
+	string lbl = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = $3.traducao + $5.traducao +"\n\t" + lbl +":\n\n\t" + var + " = " + $3.label + " < " + $5.label + "\n\t" +  var2 + " = !" + var + "\t" + "\n\n\tif(" + var2 + ") " + "goto " + saida +";" + $7.traducao + "\n\t" + $3.label + " = " + $3.label + " + 1;" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
+
+
+	if(T_simbolo[bloco_qtd][$3.label].valor<T_simbolo[bloco_qtd][$5.label].valor)
+	{
+	adicionaTabela(var, "bool", "true", var);
+	adicionaTabela(var2, "bool", "false", var2);
+	}
+	else
+	{
+		adicionaTabela(var, "bool", "false", var);
+		adicionaTabela(var2, "bool", "true", var2);
+	}
+	
 }
 |	TIPO_INT ID ';'
 {
@@ -824,7 +841,7 @@ string tipo_simbolo(string nome)
 
 string traducao_declaracao()
 {
-	string traducao = "";
+	string traducao = "\n";
 	for(auto const& [key, val]: T_simbolo[bloco_qtd]) {
 		if(val.tipo=="bool")
 		{
