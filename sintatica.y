@@ -192,7 +192,7 @@ comando: bloco
 	string saida = geraLabel();
 	$$.traducao = "\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = !" + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
 	
-	adicionaTabela(var, $3.tipo, T_simbolo[bloco_qtd][$3.label].valor, var);
+	adicionaTabela(var, $3.tipo, $3.valor, var);
 
 }
 | DO bloco WHILE '(' expressao ')' ';'
@@ -202,7 +202,7 @@ comando: bloco
 	string saida = geraLabel();
 	$$.traducao = "\t" + lbl + ":" +$2.traducao + "\n" + $5.traducao + "\t" + var + " = !" + $5.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
 	
-	adicionaTabela(var, $5.tipo, T_simbolo[bloco_qtd][$5.label].valor, var);
+	adicionaTabela(var, $5.tipo, $5.valor, var);
 
 }
 | FOR '(' fator ':' fator ')' bloco
@@ -214,7 +214,7 @@ comando: bloco
 	$$.traducao = $3.traducao + $5.traducao +"\n\t" + lbl +":\n\n\t" + var + " = " + $3.label + " < " + $5.label + "\n\t" +  var2 + " = !" + var + "\t" + "\n\n\tif(" + var2 + ") " + "goto " + saida +";" + $7.traducao + "\n\t" + $3.label + " = " + $3.label + " + 1;" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
 
 
-	if(T_simbolo[bloco_qtd][$3.label].valor<T_simbolo[bloco_qtd][$5.label].valor)
+	if($3.valor < $5.valor)
 	{
 	adicionaTabela(var, "bool", "true", var);
 	adicionaTabela(var2, "bool", "false", var2);

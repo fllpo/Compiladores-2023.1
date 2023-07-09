@@ -1,6 +1,8 @@
 int main()
 {
-	for( 0 : 10 )
+	i = 1;
+	j = 3;
+	for( i : j )
 	{
 		a = 3;
 	}
