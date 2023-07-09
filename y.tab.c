@@ -713,10 +713,10 @@ static const yytype_int8 yytranslate[] =
 static const yytype_int16 yyrline[] =
 {
        0,    77,    77,    82,    91,    96,   102,   111,   115,   119,
-     176,   186,   196,   206,   216,   237,   252,   266,   280,   294,
-     313,   321,   329,   338,   346,   355,   363,   371,   379,   387,
-     395,   404,   413,   422,   433,   440,   448,   456,   464,   474,
-     483,   496,   504,   512,   520,   529,   546,   554,   562
+     185,   195,   205,   215,   225,   246,   261,   275,   289,   303,
+     322,   330,   338,   347,   355,   364,   372,   380,   388,   396,
+     404,   413,   422,   431,   442,   449,   457,   465,   473,   483,
+     492,   505,   513,   521,   529,   538,   555,   563,   571
 };
 #endif
 
@@ -1442,11 +1442,13 @@ yyreduce:
 		//cout << bloc<<endl;
 		if(yyvsp[-3].tipo == yyvsp[-1].tipo)
 		{
-			if(yyvsp[-3].tipo == "string"){
+			if(yyvsp[-3].tipo == "string")
+			{
 				yyval.traducao=yyvsp[-1].traducao+"\n";
 			}
-			else{
-			yyval.traducao = yyvsp[-1].traducao + "\t" + T_simbolo[bloc][yyvsp[-3].label].nome_temp + " = " + yyvsp[-1].label + ";\n";
+			else
+			{
+				yyval.traducao = yyvsp[-1].traducao + "\t" + T_simbolo[bloc][yyvsp[-3].label].nome_temp + " = " + yyvsp[-1].label + ";\n";
 			}
 		}
 		else if(yyvsp[-1].tipo == "bool")
@@ -1475,17 +1477,24 @@ yyreduce:
 				yyval.traducao = yyvsp[-1].traducao + "\t" + T_simbolo[bloc][yyvsp[-3].label].nome_temp + " = (int) " + yyvsp[-1].label + ";\n";
 			}
 		}
+		else if(yyvsp[-1].tipo=="string")
+		{
+			cout<<T_simbolo[bloc][yyvsp[-1].label].valor;
+			string var = geraVariavelTemporaria();
+			yyval.traducao = yyvsp[-1].traducao;
+			//adicionaTabela($$.label,$$.tipo, T_simbolo[bloc][$3.label].valor, var);
+		}
 		else{
 			yyerror("Variável esperava tipo " + yyvsp[-3].tipo + ", mas recebeu tipo " + yyvsp[-1].tipo);
 		}
 		//T_simbolo[bloc][$1.label.valor = T_simbolo[bloc][$3.label].valor;
 	}
 }
-#line 1485 "y.tab.c"
+#line 1494 "y.tab.c"
     break;
 
   case 10: /* comando: IF '(' expressao ')' bloco  */
-#line 177 "sintatica.y"
+#line 186 "sintatica.y"
 {
 	string neg = geraVariavelTemporaria();
 	string lbl = geraLabel();
@@ -1495,11 +1504,11 @@ yyreduce:
 	else adicionaTabela(neg, yyvsp[-2].tipo, "true", neg);
 	
 }
-#line 1499 "y.tab.c"
+#line 1508 "y.tab.c"
     break;
 
   case 11: /* comando: IF '(' expressao ')' bloco ELSE bloco  */
-#line 187 "sintatica.y"
+#line 196 "sintatica.y"
 {
 	string neg = geraVariavelTemporaria();
 	string lbl = geraLabel();
@@ -1509,11 +1518,11 @@ yyreduce:
 	if(yyvsp[-4].valor=="true") adicionaTabela(neg, yyvsp[-4].tipo, "false", neg);
 	else adicionaTabela(neg, yyvsp[-4].tipo, "true", neg);
 }
-#line 1513 "y.tab.c"
+#line 1522 "y.tab.c"
     break;
 
   case 12: /* comando: WHILE '(' expressao ')' bloco  */
-#line 197 "sintatica.y"
+#line 206 "sintatica.y"
 {
 	string var = geraVariavelTemporaria();
 	string lbl = geraLabel();
@@ -1523,11 +1532,11 @@ yyreduce:
 	adicionaTabela(var, yyvsp[-2].tipo, yyvsp[-2].valor, var);
 
 }
-#line 1527 "y.tab.c"
+#line 1536 "y.tab.c"
     break;
 
   case 13: /* comando: DO bloco WHILE '(' expressao ')' ';'  */
-#line 207 "sintatica.y"
+#line 216 "sintatica.y"
 {
 	string var = geraVariavelTemporaria();
 	string lbl = geraLabel();
@@ -1537,11 +1546,11 @@ yyreduce:
 	adicionaTabela(var, yyvsp[-2].tipo, yyvsp[-2].valor, var);
 
 }
-#line 1541 "y.tab.c"
+#line 1550 "y.tab.c"
     break;
 
   case 14: /* comando: FOR '(' fator ':' fator ')' bloco  */
-#line 217 "sintatica.y"
+#line 226 "sintatica.y"
 {
 	string var = geraVariavelTemporaria();
 	string var2 = geraVariavelTemporaria();
@@ -1562,11 +1571,11 @@ yyreduce:
 	}
 	
 }
-#line 1566 "y.tab.c"
+#line 1575 "y.tab.c"
     break;
 
   case 15: /* comando: TIPO_INT ID ';'  */
-#line 238 "sintatica.y"
+#line 247 "sintatica.y"
 {
 	bool teste;
 	int bloc;
@@ -1581,11 +1590,11 @@ yyreduce:
 		yyerror("Variável já declarada!");
 	}
 }
-#line 1585 "y.tab.c"
+#line 1594 "y.tab.c"
     break;
 
   case 16: /* comando: TIPO_FLOAT ID ';'  */
-#line 253 "sintatica.y"
+#line 262 "sintatica.y"
 {
 	bool teste;
 	int bloc;
@@ -1599,11 +1608,11 @@ yyreduce:
 		yyerror("Variável já declarada!");
 	}
 }
-#line 1603 "y.tab.c"
+#line 1612 "y.tab.c"
     break;
 
   case 17: /* comando: TIPO_BOOL ID ';'  */
-#line 267 "sintatica.y"
+#line 276 "sintatica.y"
 {
 	bool teste;
 	int bloc;
@@ -1617,11 +1626,11 @@ yyreduce:
 		yyerror("Variável já declarada!");
 	}
 }
-#line 1621 "y.tab.c"
+#line 1630 "y.tab.c"
     break;
 
   case 18: /* comando: TIPO_CHAR ID ';'  */
-#line 281 "sintatica.y"
+#line 290 "sintatica.y"
 {
 	bool teste;
 	int bloc;
@@ -1635,11 +1644,11 @@ yyreduce:
 		yyerror("Variável já declarada!");
 	}
 }
-#line 1639 "y.tab.c"
+#line 1648 "y.tab.c"
     break;
 
   case 19: /* comando: TIPO_STRING ID ';'  */
-#line 295 "sintatica.y"
+#line 304 "sintatica.y"
 {
 	bool teste;
 	int bloc;
@@ -1653,11 +1662,11 @@ yyreduce:
 		yyerror("Variável já declarada!");
 	}
 }
-#line 1657 "y.tab.c"
+#line 1666 "y.tab.c"
     break;
 
   case 20: /* expressao: expressao E_LOGICO relacao  */
-#line 314 "sintatica.y"
+#line 323 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1665,11 +1674,11 @@ yyreduce:
 	yyval.tipo = "bool";
 	yyval.valor = "";
 }
-#line 1669 "y.tab.c"
+#line 1678 "y.tab.c"
     break;
 
   case 21: /* expressao: expressao OU_LOGICO relacao  */
-#line 322 "sintatica.y"
+#line 331 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1677,22 +1686,22 @@ yyreduce:
 	yyval.tipo = "bool";
 	yyval.valor = "";
 }
-#line 1681 "y.tab.c"
+#line 1690 "y.tab.c"
     break;
 
   case 22: /* expressao: relacao  */
-#line 330 "sintatica.y"
+#line 339 "sintatica.y"
 {
 	yyval.traducao = yyvsp[0].traducao;
 	yyval.label = yyvsp[0].label;
 	yyval.tipo = yyvsp[0].tipo;
 	yyval.valor = yyvsp[0].valor;
 }
-#line 1692 "y.tab.c"
+#line 1701 "y.tab.c"
     break;
 
   case 23: /* relacao: aritmetica IGUAL aritmetica  */
-#line 339 "sintatica.y"
+#line 348 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1700,11 +1709,11 @@ yyreduce:
 	yyval.tipo = "bool";
 	yyval.valor = "";
 }
-#line 1704 "y.tab.c"
+#line 1713 "y.tab.c"
     break;
 
   case 24: /* relacao: aritmetica DIFERENTE aritmetica  */
-#line 347 "sintatica.y"
+#line 356 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1712,11 +1721,11 @@ yyreduce:
 	yyval.tipo = "bool";
 	yyval.valor = "";
 }
-#line 1716 "y.tab.c"
+#line 1725 "y.tab.c"
     break;
 
   case 25: /* relacao: aritmetica MAIOR aritmetica  */
-#line 356 "sintatica.y"
+#line 365 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1724,11 +1733,11 @@ yyreduce:
 	yyval.tipo = "bool";
 	yyval.valor = "";
 }
-#line 1728 "y.tab.c"
+#line 1737 "y.tab.c"
     break;
 
   case 26: /* relacao: aritmetica MENOR aritmetica  */
-#line 364 "sintatica.y"
+#line 373 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1736,11 +1745,11 @@ yyreduce:
 	yyval.tipo = "bool";
 	yyval.valor = "";
 }
-#line 1740 "y.tab.c"
+#line 1749 "y.tab.c"
     break;
 
   case 27: /* relacao: aritmetica MAIOR_IGUAL aritmetica  */
-#line 372 "sintatica.y"
+#line 381 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1748,11 +1757,11 @@ yyreduce:
 	yyval.tipo = "bool";
 	yyval.valor = "";
 }
-#line 1752 "y.tab.c"
+#line 1761 "y.tab.c"
     break;
 
   case 28: /* relacao: aritmetica MENOR_IGUAL aritmetica  */
-#line 380 "sintatica.y"
+#line 389 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1760,11 +1769,11 @@ yyreduce:
 	yyval.tipo = "bool";
 	yyval.valor = "";
 }
-#line 1764 "y.tab.c"
+#line 1773 "y.tab.c"
     break;
 
   case 29: /* relacao: NEGAR relacao  */
-#line 388 "sintatica.y"
+#line 397 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	
@@ -1772,22 +1781,22 @@ yyreduce:
 	yyval.tipo = "bool";
 	yyval.valor = "";
 }
-#line 1776 "y.tab.c"
+#line 1785 "y.tab.c"
     break;
 
   case 30: /* relacao: converte  */
-#line 396 "sintatica.y"
+#line 405 "sintatica.y"
 {
 	yyval.traducao = yyvsp[0].traducao;
 	yyval.label = yyvsp[0].label;
 	yyval.tipo = yyvsp[0].tipo;
 	yyval.valor = yyvsp[0].valor;
 }
-#line 1787 "y.tab.c"
+#line 1796 "y.tab.c"
     break;
 
   case 31: /* converte: '(' TIPO_INT ')' expressao  */
-#line 405 "sintatica.y"
+#line 414 "sintatica.y"
 {
 	yyval.valor = to_string(stoi(yyvsp[0].valor));
 
@@ -1796,11 +1805,11 @@ yyreduce:
 	adicionaTabela(yyval.label, "int", yyval.valor, yyval.label);
 	yyval.tipo = "int";
 }
-#line 1800 "y.tab.c"
+#line 1809 "y.tab.c"
     break;
 
   case 32: /* converte: '(' TIPO_FLOAT ')' expressao  */
-#line 414 "sintatica.y"
+#line 423 "sintatica.y"
 {
 	yyval.valor = to_string(stof(yyvsp[0].valor));
 
@@ -1809,33 +1818,33 @@ yyreduce:
 	adicionaTabela(yyval.label, "float", yyval.valor, yyval.label);
 	yyval.tipo = "float";
 }
-#line 1813 "y.tab.c"
+#line 1822 "y.tab.c"
     break;
 
   case 33: /* converte: aritmetica  */
-#line 423 "sintatica.y"
+#line 432 "sintatica.y"
 {
 	yyval.traducao = yyvsp[0].traducao;
 	yyval.label = yyvsp[0].label;
 	yyval.tipo = yyvsp[0].tipo;
 	yyval.valor = yyvsp[0].valor;
 }
-#line 1824 "y.tab.c"
+#line 1833 "y.tab.c"
     break;
 
   case 34: /* aritmetica: fator  */
-#line 434 "sintatica.y"
+#line 443 "sintatica.y"
 {
 	yyval.traducao = yyvsp[0].traducao;
 	yyval.label = yyvsp[0].label;
 	yyval.tipo = yyvsp[0].tipo;
 	yyval.valor = yyvsp[0].valor;
 }
-#line 1835 "y.tab.c"
+#line 1844 "y.tab.c"
     break;
 
   case 35: /* aritmetica: aritmetica SOMA aritmetica  */
-#line 441 "sintatica.y"
+#line 450 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1843,11 +1852,11 @@ yyreduce:
 	yyval.tipo = e1.tipo;
 	yyval.valor = "";
 }
-#line 1847 "y.tab.c"
+#line 1856 "y.tab.c"
     break;
 
   case 36: /* aritmetica: aritmetica SUBTRAI aritmetica  */
-#line 449 "sintatica.y"
+#line 458 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1855,11 +1864,11 @@ yyreduce:
 	yyval.tipo = e1.tipo;
 	yyval.valor = "";
 }
-#line 1859 "y.tab.c"
+#line 1868 "y.tab.c"
     break;
 
   case 37: /* aritmetica: aritmetica MULTIPLICA aritmetica  */
-#line 457 "sintatica.y"
+#line 466 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	COERCAO(yyvsp[-2], yyvsp[0], e1, e3);
@@ -1867,11 +1876,11 @@ yyreduce:
 	yyval.tipo = e1.tipo;
 	yyval.valor = "";
 }
-#line 1871 "y.tab.c"
+#line 1880 "y.tab.c"
     break;
 
   case 38: /* aritmetica: aritmetica DIVIDE aritmetica  */
-#line 465 "sintatica.y"
+#line 474 "sintatica.y"
 {
 	if(stof(yyvsp[0].valor)==0) yyerror("Divisão por zero");
 	
@@ -1881,11 +1890,11 @@ yyreduce:
 	yyval.tipo = e1.tipo;
 	yyval.valor = "";
 }
-#line 1885 "y.tab.c"
+#line 1894 "y.tab.c"
     break;
 
   case 39: /* aritmetica: SOMA aritmetica  */
-#line 475 "sintatica.y"
+#line 484 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	adicionaTabela(yyval.label, yyvsp[0].tipo, "N/A", yyval.label);
@@ -1894,11 +1903,11 @@ yyreduce:
 	yyval.tipo = yyvsp[0].tipo;
 	yyval.valor = yyvsp[0].valor;
 }
-#line 1898 "y.tab.c"
+#line 1907 "y.tab.c"
     break;
 
   case 40: /* aritmetica: SUBTRAI aritmetica  */
-#line 484 "sintatica.y"
+#line 493 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	adicionaTabela(yyval.label, yyvsp[0].tipo, "N/A", yyval.label);
@@ -1907,11 +1916,11 @@ yyreduce:
 	yyval.tipo = yyvsp[0].tipo;
 	yyval.valor = "-" + yyvsp[0].valor;
 }
-#line 1911 "y.tab.c"
+#line 1920 "y.tab.c"
     break;
 
   case 41: /* fator: NUM  */
-#line 497 "sintatica.y"
+#line 506 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].traducao + ";\n";
@@ -1919,11 +1928,11 @@ yyreduce:
 	yyval.valor = yyvsp[0].traducao;
 	adicionaTabela(yyval.label, "int", yyvsp[0].traducao, yyval.label);
 }
-#line 1923 "y.tab.c"
+#line 1932 "y.tab.c"
     break;
 
   case 42: /* fator: REAL  */
-#line 505 "sintatica.y"
+#line 514 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].traducao + ";\n";
@@ -1931,11 +1940,11 @@ yyreduce:
 	yyval.valor = yyvsp[0].traducao;
 	adicionaTabela(yyval.label, "float" ,yyvsp[0].traducao, yyval.label);
 }
-#line 1935 "y.tab.c"
+#line 1944 "y.tab.c"
     break;
 
   case 43: /* fator: CHAR  */
-#line 513 "sintatica.y"
+#line 522 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].traducao + "';\n";
@@ -1943,24 +1952,24 @@ yyreduce:
 	yyval.valor = yyvsp[0].traducao;
 	adicionaTabela(yyval.label, yyval.tipo ,yyval.valor, yyval.label);
 }
-#line 1947 "y.tab.c"
+#line 1956 "y.tab.c"
     break;
 
   case 44: /* fator: STRING  */
-#line 521 "sintatica.y"
+#line 530 "sintatica.y"
 {
 	yyval.tipo = "string";
-	yyval.valor = yyval.label;
+	yyval.valor = yyvsp[0].traducao;
 	yyval.label = geraVariavelTemporaria();
-	adicionaTabela(yyval.label, yyval.tipo, yyvsp[0].traducao, yyval.label);
-	yyval.traducao = "\tstrcpy(" + yyval.label + ", " + yyvsp[0].traducao + ");\n\tstrcpy(" + T_simbolo[bloco_qtd][yyvsp[-1].label].nome_temp + ", " + yyval.label + ");";	
+	adicionaTabela(yyvsp[0].label, yyval.tipo, yyval.valor, yyval.label);
+	yyval.traducao = "\tstrcpy(" + yyval.label + ", " + yyvsp[0].traducao + ");\n\t";	
 	
 }
-#line 1960 "y.tab.c"
+#line 1969 "y.tab.c"
     break;
 
   case 45: /* fator: ID  */
-#line 530 "sintatica.y"
+#line 539 "sintatica.y"
 {
 	bool teste;
 	int bloc;
@@ -1977,11 +1986,11 @@ yyreduce:
 		yyval.valor = T_simbolo[bloc][yyvsp[0].label].valor;
 	}
 }
-#line 1981 "y.tab.c"
+#line 1990 "y.tab.c"
     break;
 
   case 46: /* fator: VERDADEIRO  */
-#line 547 "sintatica.y"
+#line 556 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + "1" + ";\n";
@@ -1989,11 +1998,11 @@ yyreduce:
 	yyval.valor = "true";
 	adicionaTabela(yyval.label, "bool", "true", yyval.label);
 }
-#line 1993 "y.tab.c"
+#line 2002 "y.tab.c"
     break;
 
   case 47: /* fator: FALSO  */
-#line 555 "sintatica.y"
+#line 564 "sintatica.y"
 {
 	yyval.label = geraVariavelTemporaria();
 	yyval.traducao = "\t" + yyval.label + " = " + "0" + ";\n";
@@ -2001,22 +2010,22 @@ yyreduce:
 	yyval.valor = "false";
 	adicionaTabela(yyval.label, "bool", "false", yyval.label);
 }
-#line 2005 "y.tab.c"
+#line 2014 "y.tab.c"
     break;
 
   case 48: /* fator: '(' expressao ')'  */
-#line 563 "sintatica.y"
+#line 572 "sintatica.y"
 {
 	yyval.traducao = yyvsp[-1].traducao;
 	yyval.label = yyvsp[-1].label;
 	yyval.tipo = yyvsp[-1].tipo;
 	yyval.valor = yyvsp[-1].valor;
 }
-#line 2016 "y.tab.c"
+#line 2025 "y.tab.c"
     break;
 
 
-#line 2020 "y.tab.c"
+#line 2029 "y.tab.c"
 
       default: break;
     }
@@ -2209,7 +2218,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 570 "sintatica.y"
+#line 579 "sintatica.y"
 
 
 #include "lex.yy.c"

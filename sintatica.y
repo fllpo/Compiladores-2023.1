@@ -134,11 +134,13 @@ comando: bloco
 		//cout << bloc<<endl;
 		if($1.tipo == $3.tipo)
 		{
-			if($1.tipo == "string"){
+			if($1.tipo == "string")
+			{
 				$$.traducao=$3.traducao+"\n";
 			}
-			else{
-			$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = " + $3.label + ";\n";
+			else
+			{
+				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = " + $3.label + ";\n";
 			}
 		}
 		else if($3.tipo == "bool")
@@ -166,6 +168,13 @@ comando: bloco
 			{
 				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = (int) " + $3.label + ";\n";
 			}
+		}
+		else if($3.tipo=="string")
+		{
+			cout<<T_simbolo[bloc][$3.label].valor;
+			string var = geraVariavelTemporaria();
+			$$.traducao = $3.traducao;
+			//adicionaTabela($$.label,$$.tipo, T_simbolo[bloc][$3.label].valor, var);
 		}
 		else{
 			yyerror("Variável esperava tipo " + $1.tipo + ", mas recebeu tipo " + $3.tipo);
@@ -520,10 +529,10 @@ fator:
 |	STRING
 {
 	$$.tipo = "string";
-	$$.valor = $$.label;
+	$$.valor = $1.traducao;
 	$$.label = geraVariavelTemporaria();
-	adicionaTabela($$.label, $$.tipo, $1.traducao, $$.label);
-	$$.traducao = "\tstrcpy(" + $$.label + ", " + $1.traducao + ");\n\tstrcpy(" + T_simbolo[bloco_qtd][$0.label].nome_temp + ", " + $$.label + ");";	
+	adicionaTabela($1.label, $$.tipo, $$.valor, $$.label);
+	$$.traducao = "\tstrcpy(" + $$.label + ", " + $1.traducao + ");\n\t";	
 	
 }	
 | 	ID
