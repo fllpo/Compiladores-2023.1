@@ -1,6 +1,7 @@
 %{
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <map>
 #include <tuple>
@@ -120,6 +121,7 @@ comando: bloco
 	bool teste;
 	int bloc;
 	tie(teste, bloc) = testa_simbolo($1.label);
+
 	if ((!teste))
 	{
 		string var = geraVariavelTemporaria();
@@ -132,7 +134,12 @@ comando: bloco
 		//cout << bloc<<endl;
 		if($1.tipo == $3.tipo)
 		{
+			if($1.tipo == "string"){
+				$$.traducao=$3.traducao+"\n";
+			}
+			else{
 			$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = " + $3.label + ";\n";
+			}
 		}
 		else if($3.tipo == "bool")
 		{
@@ -159,7 +166,8 @@ comando: bloco
 			{
 				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = (int) " + $3.label + ";\n";
 			}
-		}else{
+		}
+		else{
 			yyerror("Variável esperava tipo " + $1.tipo + ", mas recebeu tipo " + $3.tipo);
 		}
 		//T_simbolo[bloc][$1.label.valor = T_simbolo[bloc][$3.label].valor;
@@ -283,6 +291,21 @@ comando: bloco
 		yyerror("Variável já declarada!");
 	}
 }
+|	TIPO_STRING ID ';'
+{
+	bool teste;
+	int bloc;
+	tie(teste, bloc) = testa_simbolo($2.label);
+	if ((!teste) || bloc != bloco_qtd)
+	{
+		string var = geraVariavelTemporaria();
+		$$.traducao = "";
+		adicionaTabela($2.label, "string", "N/A", var);
+	}else{
+		yyerror("Variável já declarada!");
+	}
+}
+
 ;
 
 expressao:
@@ -489,15 +512,20 @@ fator:
 |	CHAR
 {
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = "\t" + $$.label + " = " + $1.traducao + " ;\n";
+	$$.traducao = "\t" + $$.label + " = " + $1.traducao + "';\n";
 	$$.tipo = "char";
 	$$.valor = $1.traducao;
-	adicionaTabela($$.label, "char" ,$1.traducao, $$.label);
+	adicionaTabela($$.label, $$.tipo ,$$.valor, $$.label);
 }
 |	STRING
 {
-	//Para fazer
-}
+	$$.tipo = "string";
+	$$.valor = $$.label;
+	$$.label = geraVariavelTemporaria();
+	adicionaTabela($$.label, $$.tipo, $1.traducao, $$.label);
+	$$.traducao = "\tstrcpy(" + $$.label + ", " + $1.traducao + ");\n\tstrcpy(" + T_simbolo[bloco_qtd][$0.label].nome_temp + ", " + $$.label + ");";	
+	
+}	
 | 	ID
 {
 	bool teste;
@@ -848,7 +876,14 @@ string traducao_declaracao()
 			traducao = traducao + "\t"+ "int" + " " + val.nome_temp + ";\n";
 			continue;
 		}
+		if(val.tipo=="string"){			
+			
+			traducao = traducao + "\t"+ "char" + " " + val.nome_temp + "["+ to_string(size(val.valor)-2)+ "]" +";\n";
+			continue;
+		}
+		
 		traducao = traducao + "\t"+ val.tipo + " " + val.nome_temp + ";\n";
+		
 	}
 	return traducao;
 }
