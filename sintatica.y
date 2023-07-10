@@ -13,6 +13,15 @@
 	struct atributos e1, e3;					\
 	tie(e1,e3) = coercao_tipo(s1,s3)
 
+#define VERIFICACAO_ID(id_nome, num_bloco)									\
+		bool teste;												\
+		int num_bloco;												\
+		tie(teste, num_bloco) = testa_simbolo(id_nome);				\
+		if (!teste)												\
+		{														\
+			yyerror("Variável não declarada!");					\
+		}			
+
 using namespace std;
 
 struct atributos
@@ -65,6 +74,7 @@ string declaracoes = "";
 %token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE 
 %token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO NEGAR
 %token IF ELSE WHILE DO FOR CONTINUE BREAK
+%token SCAN PRINT
 
 %start S
 
@@ -259,6 +269,14 @@ comando: bloco
 	}
 	
 }
+|	SCAN '(' entradas ')' ';'
+{
+	$$.traducao = $3.traducao;
+}
+|	PRINT '(' expressoes ')' ';'
+{
+	$$.traducao = $3.traducao;
+}
 |	TIPO_INT ID ';'
 {
 	bool teste;
@@ -332,6 +350,28 @@ comando: bloco
 }
 
 ;
+
+entradas:
+	ID ',' entradas
+{
+	VERIFICACAO_ID($1.label, bloc)
+
+	$$.traducao = "\n\tcin >> " + $1.label + ";\n\n" + $3.traducao;
+}
+|	ID
+{
+	$$.traducao = "\tcin >> " + $1.label + ";\n";
+};
+
+expressoes:
+	expressao ',' expressoes
+{
+	$$.traducao = $1.traducao + "\n\tcout << " + $1.label + ";\n\n" + $3.traducao;
+}
+|	expressao
+{
+	$$.traducao = $1.traducao + "\n\tcout << " + $1.label + ";\n";
+};
 
 expressao:
 // 	Operadores lógicos
@@ -553,13 +593,8 @@ fator:
 }	
 | 	ID
 {
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($1.label);
-	if (!teste)
-	{
-		yyerror("Variável não declarada!");
-	}else
+	VERIFICACAO_ID($1.label, bloc)
+	else
 	{
 		$$.traducao ="";
 		$$.label = T_simbolo[bloc][$1.label].nome_temp;
