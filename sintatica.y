@@ -80,7 +80,7 @@ string declaracoes = "";
 
 %left SOMA SUBTRAI
 %right MULTIPLICA DIVIDE
-%right '('')' E_LOGICO OU_LOGICO
+%right '('')' E_LOGICO OU_LOGICO 
 
 %%
 
@@ -124,22 +124,7 @@ bloco: blocofuncao '{' comandos '}'
 	bloco_qtd--;
 	T_simbolo.pop_back();
 }
-|	blocofuncao '{' comandos CONTINUE comandos '}'
-{	
-	declaracoes = declaracoes + traducao_declaracao();
-	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
-	T_debug.push_back(T_simbolo[bloco_qtd]);
-	bloco_qtd--;
-	T_simbolo.pop_back();
-}
-|	blocofuncao '{' comandos BREAK comandos '}'
-{	
-	declaracoes = declaracoes + traducao_declaracao();
-	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
-	T_debug.push_back(T_simbolo[bloco_qtd]);
-	bloco_qtd--;
-	T_simbolo.pop_back();
-};
+;
 
 comandos: comando comandos 			
 {
@@ -322,77 +307,7 @@ atribuicao:
 		}
 		//T_simbolo[bloc][$1.label].valor = T_simbolo[bloc][$3.label].valor;
 	}
-}
-| IF '(' expressao ')' bloco
-{
-	string neg = geraVariavelTemporaria();
-	string lbl = geraLabel();
-	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n";
-	
-	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
-	else adicionaTabela(neg, $3.tipo, "true", neg);
-	
-}
-| IF '(' expressao ')' bloco ELSE bloco
-{
-	string neg = geraVariavelTemporaria();
-	string lbl = geraLabel();
-	string saida = geraLabel();
-	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\t" + $5.traducao + "\tgoto " + saida + ";\n\t" + lbl + ":\t" + $7.traducao + "\n\t" + saida + ":" + "\n";
-
-	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
-	else adicionaTabela(neg, $3.tipo, "true", neg);
-}
-| WHILE '(' expressao ')' bloco
-{
-	string var = geraVariavelTemporaria();
-	string lbl = geraLabel();
-	string saida = geraLabel();
-	$$.traducao = "\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = !" + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
-	
-	adicionaTabela(var, $3.tipo, $3.valor, var);
-
-}
-| DO bloco WHILE '(' expressao ')' ';'
-{
-	string var = geraVariavelTemporaria();
-	string lbl = geraLabel();
-	string saida = geraLabel();
-	$$.traducao = "\t" + lbl + ":" +$2.traducao + "\n" + $5.traducao + "\t" + var + " = !" + $5.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
-	
-	adicionaTabela(var, $5.tipo, $5.valor, var);
-
-}
-| FOR '(' fator ':' fator ')' bloco
-{
-	string var = geraVariavelTemporaria();
-	string var2 = geraVariavelTemporaria();
-	string lbl = geraLabel();
-	string saida = geraLabel();
-	$$.traducao = $3.traducao + $5.traducao +"\n\t" + lbl +":\n\n\t" + var + " = " + $3.label + " < " + $5.label + "\n\t" +  var2 + " = !" + var + "\t" + "\n\n\tif(" + var2 + ") " + "goto " + saida +";" + $7.traducao + "\n\t" + $3.label + " = " + $3.label + " + 1;" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
-
-
-	if($3.valor < $5.valor)
-	{
-	adicionaTabela(var, "bool", "true", var);
-	adicionaTabela(var2, "bool", "false", var2);
-	}
-	else
-	{
-		adicionaTabela(var, "bool", "false", var);
-		adicionaTabela(var2, "bool", "true", var2);
-	}
-	
-}/*
-|	CONTINUE ';'
-{
-	
-}
-|	BREAK ';'
-{
-	
-}*/
-;
+};
 declaracao:
 	TIPO_INT ID ';'
 {
