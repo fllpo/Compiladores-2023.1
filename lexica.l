@@ -13,7 +13,7 @@ DELIM               {espaco}+
 NUM                 {digito}+ 
 REAL                {NUM}+("."{NUM}+)?      
 CHAR                \'{letra}|{NUM}\'
-STRING              \"(({letra}|{NUM})+)\"
+STRING              \"(({letra}|{NUM})*)\"
 ID                  {letra}({letra}|{NUM})*
 %%
 
@@ -55,6 +55,8 @@ ID                  {letra}({letra}|{NUM})*
 "for"               return FOR;
 "continue"          return CONTINUE;
 "break"             return BREAK;
+"scan"              return SCAN;
+"print"             return PRINT;
 
 
 {NUM}               {yylval.traducao = yytext; return NUM;}
