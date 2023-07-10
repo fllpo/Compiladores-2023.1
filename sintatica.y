@@ -13,6 +13,15 @@
 	struct atributos e1, e3;					\
 	tie(e1,e3) = coercao_tipo(s1,s3)
 
+#define VERIFICACAO_ID(id_nome, num_bloco)													\
+		bool teste;																			\
+		int num_bloco;																		\
+		tie(teste, num_bloco) = testa_simbolo(id_nome);										\
+		if (!teste)																			\
+		{																					\
+			yyerror("A variável \"" + id_nome + "\" não foi declarada!");					\
+		}			
+
 using namespace std;
 
 struct atributos
@@ -57,8 +66,6 @@ int num_linha = 1;
 int bloco_qtd = -1;
 int bloco_qtd_debug = -1;
 int label_qnt=0;
-string lbl;
-string saida;
 string declaracoes = "";
 %}
 
@@ -67,6 +74,7 @@ string declaracoes = "";
 %token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE 
 %token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO NEGAR
 %token IF ELSE WHILE DO FOR CONTINUE BREAK
+%token SCAN PRINT
 
 %start S
 
@@ -76,12 +84,55 @@ string declaracoes = "";
 
 %%
 
-S: TIPO_INT MAIN '(' ')' bloco
+S: blocofuncao globais
 {
-	cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n\nint main(void)\n{" << declaracoes + $5.traducao << "\n\treturn 0;\n}" << endl;
+	T_debug.push_back(T_simbolo[bloco_qtd]);
+	cout << "\n" << "#include <iostream>\n#include <string.h>\n#include <stdio.h>\n" + traducao_declaracao() + $2.traducao << endl;
+};
+
+globais: global globais
+{
+	$$.traducao = $1.traducao + $2.traducao;
+}
+|	global
+{
+	$$.traducao = $1.traducao;
+};
+global:	declaracao
+{
+	$$.traducao = $1.traducao;
+}
+|	atribuicao
+{
+	$$.traducao = $1.traducao;
+}
+|	fn_main
+{
+	$$.traducao = $1.traducao;
+};
+
+fn_main: TIPO_INT MAIN '(' ')' bloco
+{
+	$$.traducao = "\n\nint main(void)\n{" + declaracoes + $5.traducao + "\n\treturn 0;\n}\n";
 };
 
 bloco: blocofuncao '{' comandos '}'
+{	
+	declaracoes = declaracoes + traducao_declaracao();
+	$$.traducao = "\t\n" + $3.traducao;
+	T_debug.push_back(T_simbolo[bloco_qtd]);
+	bloco_qtd--;
+	T_simbolo.pop_back();
+}
+|	blocofuncao '{' comandos CONTINUE comandos '}'
+{	
+	declaracoes = declaracoes + traducao_declaracao();
+	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
+	T_debug.push_back(T_simbolo[bloco_qtd]);
+	bloco_qtd--;
+	T_simbolo.pop_back();
+}
+|	blocofuncao '{' comandos BREAK comandos '}'
 {	
 	declaracoes = declaracoes + traducao_declaracao();
 	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
@@ -112,13 +163,92 @@ blocofuncao:
 
 comando: bloco
 {	
-	$$.traducao = $1.traducao + "\t}\n";
+	$$.traducao = $1.traducao + "\t\n";
 }
 |	expressao ';'
 {
 	$$.traducao = "";
 }
-|	ID ATRIBUI expressao ';'
+|	atribuicao
+{
+	$$.traducao = $1.traducao;
+}
+| IF '(' expressao ')' bloco
+{
+	string neg = geraVariavelTemporaria();
+	string lbl = geraLabel();
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n";
+	
+	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
+	else adicionaTabela(neg, $3.tipo, "true", neg);
+	
+}
+| IF '(' expressao ')' bloco ELSE bloco
+{
+	string neg = geraVariavelTemporaria();
+	string lbl = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\t" + $5.traducao + "\tgoto " + saida + ";\n\t" + lbl + ":\t" + $7.traducao + "\n\t" + saida + ":" + "\n";
+
+	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
+	else adicionaTabela(neg, $3.tipo, "true", neg);
+}
+| WHILE '(' expressao ')' bloco
+{
+	string var = geraVariavelTemporaria();
+	string lbl = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = "\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = !" + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
+	
+	adicionaTabela(var, $3.tipo, $3.valor, var);
+
+}
+| DO bloco WHILE '(' expressao ')' ';'
+{
+	string var = geraVariavelTemporaria();
+	string lbl = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = "\t" + lbl + ":" +$2.traducao + "\n" + $5.traducao + "\t" + var + " = !" + $5.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
+	
+	adicionaTabela(var, $5.tipo, $5.valor, var);
+
+}
+| FOR '(' fator ':' fator ')' bloco
+{
+	string var = geraVariavelTemporaria();
+	string var2 = geraVariavelTemporaria();
+	string lbl = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = $3.traducao + $5.traducao +"\n\t" + lbl +":\n\n\t" + var + " = " + $3.label + " < " + $5.label + "\n\t" +  var2 + " = !" + var + "\t" + "\n\n\tif(" + var2 + ") " + "goto " + saida +";" + $7.traducao + "\n\t" + $3.label + " = " + $3.label + " + 1;" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
+
+
+	if($3.valor < $5.valor)
+	{
+	adicionaTabela(var, "bool", "true", var);
+	adicionaTabela(var2, "bool", "false", var2);
+	}
+	else
+	{
+		adicionaTabela(var, "bool", "false", var);
+		adicionaTabela(var2, "bool", "true", var2);
+	}
+	
+}
+|	SCAN '(' entradas ')' ';'
+{
+	$$.traducao = $3.traducao;
+}
+|	PRINT '(' expressoes ')' ';'
+{
+	$$.traducao = $3.traducao;
+}
+|	declaracao
+{
+	$$.traducao = $1.traducao;
+};
+
+atribuicao:
+	ID ATRIBUI expressao ';'
 {
 	bool teste;
 	int bloc;
@@ -190,7 +320,7 @@ comando: bloco
 		else{
 			yyerror("Variável esperava tipo " + $1.tipo + ", mas recebeu tipo " + $3.tipo);
 		}
-		//T_simbolo[bloc][$1.label.valor = T_simbolo[bloc][$3.label].valor;
+		//T_simbolo[bloc][$1.label].valor = T_simbolo[bloc][$3.label].valor;
 	}
 }
 | IF '(' expressao ')' bloco
@@ -262,7 +392,9 @@ comando: bloco
 {
 	
 }*/
-|	TIPO_INT ID ';'
+;
+declaracao:
+	TIPO_INT ID ';'
 {
 	bool teste;
 	int bloc;
@@ -332,9 +464,31 @@ comando: bloco
 	}else{
 		yyerror("Variável já declarada!");
 	}
-}
+};
 
-;
+entradas:
+	ID ',' entradas
+{
+	VERIFICACAO_ID($1.label, bloc)
+
+	$$.traducao = "\n\tcin >> " + T_simbolo[bloc][$1.label].nome_temp + ";" + $3.traducao;
+}
+|	ID
+{
+	VERIFICACAO_ID($1.label, bloc)
+
+	$$.traducao = "\n\tcin >> " + T_simbolo[bloc][$1.label].nome_temp + ";\n";
+};
+
+expressoes:
+	expressao ',' expressoes
+{
+	$$.traducao = $1.traducao + "\n\tcout << " + $1.label + ";\n" + $3.traducao;
+}
+|	expressao
+{
+	$$.traducao = "\n" + $1.traducao + "\tcout << " + $1.label + ";\n";
+};
 
 expressao:
 // 	Operadores lógicos
@@ -556,13 +710,8 @@ fator:
 }	
 | 	ID
 {
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($1.label);
-	if (!teste)
-	{
-		yyerror("Variável não declarada!");
-	}else
+	VERIFICACAO_ID($1.label, bloc)
+	else
 	{
 		$$.traducao ="";
 		$$.label = T_simbolo[bloc][$1.label].nome_temp;
@@ -871,7 +1020,7 @@ void adicionaTabela(string nome, string tipo, string valor, string novo_nome)
 	bool teste;
 	int bloc;
 	tie(teste, bloc) = testa_simbolo(nome);
-	if (!teste)
+	if ((!teste) || bloc != bloco_qtd)
 	{
 		simbolo novo;
 		novo.tipo = tipo;

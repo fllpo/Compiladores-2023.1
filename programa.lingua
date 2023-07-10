@@ -1,6 +1,4 @@
 int main()
 {
-	
-	a="teste";
-	b=a;	
+	teste = "oii";
 }
