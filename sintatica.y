@@ -66,8 +66,6 @@ int num_linha = 1;
 int bloco_qtd = -1;
 int bloco_qtd_debug = -1;
 int label_qnt=0;
-string lbl;
-string saida;
 string declaracoes = "";
 %}
 

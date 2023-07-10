@@ -1,9 +1,4 @@
-int a;
 int main()
 {
-	a = 1;
-	char b;
-	float c;
-	scan(a,b,c);
-	print(a,b,c);
+	teste = "oii";
 }
