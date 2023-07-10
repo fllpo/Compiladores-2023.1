@@ -1,5 +1,6 @@
 int main()
 {
-	teste = "caracteres";
-	teste2 = "string";
+	
+	a="teste";
+	b=a;	
 }

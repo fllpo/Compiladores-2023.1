@@ -57,6 +57,8 @@ int num_linha = 1;
 int bloco_qtd = -1;
 int bloco_qtd_debug = -1;
 int label_qnt=0;
+string lbl;
+string saida;
 string declaracoes = "";
 %}
 
@@ -80,22 +82,6 @@ S: TIPO_INT MAIN '(' ')' bloco
 };
 
 bloco: blocofuncao '{' comandos '}'
-{	
-	declaracoes = declaracoes + traducao_declaracao();
-	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
-	T_debug.push_back(T_simbolo[bloco_qtd]);
-	bloco_qtd--;
-	T_simbolo.pop_back();
-}
-|	blocofuncao '{' comandos CONTINUE comandos '}'
-{	
-	declaracoes = declaracoes + traducao_declaracao();
-	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
-	T_debug.push_back(T_simbolo[bloco_qtd]);
-	bloco_qtd--;
-	T_simbolo.pop_back();
-}
-|	blocofuncao '{' comandos BREAK comandos '}'
 {	
 	declaracoes = declaracoes + traducao_declaracao();
 	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
@@ -140,9 +126,18 @@ comando: bloco
 
 	if ((!teste))
 	{
-		string var = geraVariavelTemporaria();
-		$$.traducao = $3.traducao + "\t" + var + " = " + $3.label + ";\n";
-		adicionaTabela($1.label,$3.tipo, $3.valor, var);
+		if($3.tipo =="string")
+		{
+			string var = geraVariavelTemporaria();
+			$$.traducao = $3.traducao + "\tstcpy(" + var + ", " + $3.label + ");\n";
+			adicionaTabela($1.label,$3.tipo, $3.valor, var);
+		}
+		else 
+		{
+			string var = geraVariavelTemporaria();
+			$$.traducao = $3.traducao + "\t" + var + " = " + $3.label + ";\n";
+			adicionaTabela($1.label,$3.tipo, $3.valor, var);
+		}
 	}
 	else
 	{
@@ -258,7 +253,15 @@ comando: bloco
 		adicionaTabela(var2, "bool", "true", var2);
 	}
 	
+}/*
+|	CONTINUE ';'
+{
+	
 }
+|	BREAK ';'
+{
+	
+}*/
 |	TIPO_INT ID ';'
 {
 	bool teste;
