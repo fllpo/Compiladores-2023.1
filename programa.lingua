@@ -1,5 +1,9 @@
+int a;
 int main()
 {
-	teste = "caracteres";
-	teste2 = "string";
+	a = 1;
+	char b;
+	float c;
+	scan(a,b,c);
+	print(a,b,c);
 }
