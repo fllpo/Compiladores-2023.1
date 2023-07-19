@@ -1,4 +1,8 @@
 int main()
 {
-	teste = "oii";
+	
+	int teste[3];
+		
+
+
 }

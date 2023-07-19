@@ -36,9 +36,9 @@ struct simbolo
 {
 	string nome_temp;
 	string tipo;
-	string token;
 	string valor;
-	string escopo;
+	string tamanho;
+	string categoria;
 };
 
 int yylex(void);
@@ -51,7 +51,7 @@ string trad_relacional(struct atributos, string, struct atributos, string);
 string trad_if(struct atributos, string, struct atributos, string);
 string trad_logico(struct atributos, string, struct atributos, string);
 string traducao_expressao(struct atributos, string, struct atributos, string); // Função que retorna a tradução de uma expressao (aritmetica(float - int))
-void adicionaTabela(string, string, string, string); // adiciona um símbolo na tabela, com seu tipo, valor e nome_temp
+void adicionaTabela(string, string, string, string, string, string); // adiciona um símbolo na tabela, com seu tipo, valor e nome_temp
 tuple<struct atributos, struct atributos> coercao_tipo(struct atributos, struct atributos);
 tuple<bool, int> testa_simbolo(string); // Testa se a variável está na tabela (se já foi declarada)
 string tipo_simbolo(string); // Retorna o tipo do símbolo caso esse esteja na tabela
@@ -80,7 +80,7 @@ string declaracoes = "";
 
 %left SOMA SUBTRAI
 %right MULTIPLICA DIVIDE
-%right '('')' E_LOGICO OU_LOGICO
+%right '('')' E_LOGICO OU_LOGICO 
 
 %%
 
@@ -124,22 +124,7 @@ bloco: blocofuncao '{' comandos '}'
 	bloco_qtd--;
 	T_simbolo.pop_back();
 }
-|	blocofuncao '{' comandos CONTINUE comandos '}'
-{	
-	declaracoes = declaracoes + traducao_declaracao();
-	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
-	T_debug.push_back(T_simbolo[bloco_qtd]);
-	bloco_qtd--;
-	T_simbolo.pop_back();
-}
-|	blocofuncao '{' comandos BREAK comandos '}'
-{	
-	declaracoes = declaracoes + traducao_declaracao();
-	$$.traducao = "\t\n" + $1.traducao + "\n" + $3.traducao;
-	T_debug.push_back(T_simbolo[bloco_qtd]);
-	bloco_qtd--;
-	T_simbolo.pop_back();
-};
+;
 
 comandos: comando comandos 			
 {
@@ -179,8 +164,9 @@ comando: bloco
 	string lbl = geraLabel();
 	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\n\t" + $5.traducao + "\n\t" + lbl +":\n";
 	
-	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
-	else adicionaTabela(neg, $3.tipo, "true", neg);
+	adicionaTabela(lbl, "label", "IN", lbl, "", "jump");
+	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg,"","variável");
+	else adicionaTabela(neg, $3.tipo, "true", neg, "", "variável");
 	
 }
 | IF '(' expressao ')' bloco ELSE bloco
@@ -190,8 +176,10 @@ comando: bloco
 	string saida = geraLabel();
 	$$.traducao = $3.traducao + "\t" + neg + " = !" + $3.label + ";\n\n\tif(" + neg + ") " + "goto " + lbl + ";\n\t" + $5.traducao + "\tgoto " + saida + ";\n\t" + lbl + ":\t" + $7.traducao + "\n\t" + saida + ":" + "\n";
 
-	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg);
-	else adicionaTabela(neg, $3.tipo, "true", neg);
+	adicionaTabela(lbl, "label", "IN", lbl,"","jump");
+	adicionaTabela(saida, "label", "OUT", saida,"","jump");
+	if($3.valor=="true") adicionaTabela(neg, $3.tipo, "false", neg,"","variável");
+	else adicionaTabela(neg, $3.tipo, "true", neg,"","variável");
 }
 | WHILE '(' expressao ')' bloco
 {
@@ -200,7 +188,9 @@ comando: bloco
 	string saida = geraLabel();
 	$$.traducao = "\t" + lbl +":\n\n"+ $3.traducao + "\t" + var + " = !" + $3.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";"+ $5.traducao + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
 	
-	adicionaTabela(var, $3.tipo, $3.valor, var);
+	adicionaTabela(lbl, "label", "IN", lbl, "", "jump");
+	adicionaTabela(saida, "label", "OUT", saida, "", "jump");
+	adicionaTabela(var, $3.tipo, $3.valor, var,"","variável");
 
 }
 | DO bloco WHILE '(' expressao ')' ';'
@@ -210,7 +200,9 @@ comando: bloco
 	string saida = geraLabel();
 	$$.traducao = "\t" + lbl + ":" +$2.traducao + "\n" + $5.traducao + "\t" + var + " = !" + $5.label + "\t" + "\n\n\tif(" + var + ") " + "goto " + saida +";" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
 	
-	adicionaTabela(var, $5.tipo, $5.valor, var);
+	adicionaTabela(lbl, "label", "IN", lbl, "", "jump");
+	adicionaTabela(saida, "label", "OUT", saida, "", "jump");
+	adicionaTabela(var, $5.tipo, $5.valor, var,"","variável");
 
 }
 | FOR '(' fator ':' fator ')' bloco
@@ -222,15 +214,17 @@ comando: bloco
 	$$.traducao = $3.traducao + $5.traducao +"\n\t" + lbl +":\n\n\t" + var + " = " + $3.label + " < " + $5.label + "\n\t" +  var2 + " = !" + var + "\t" + "\n\n\tif(" + var2 + ") " + "goto " + saida +";" + $7.traducao + "\n\t" + $3.label + " = " + $3.label + " + 1;" + "\n\n\tgoto " + lbl +";\n\n\t" + saida + ":\n";
 
 
+	adicionaTabela(lbl, "label", "IN", lbl, "", "jump");
+	adicionaTabela(saida, "label", "OUT", saida, "", "jump");
 	if($3.valor < $5.valor)
 	{
-	adicionaTabela(var, "bool", "true", var);
-	adicionaTabela(var2, "bool", "false", var2);
+	adicionaTabela(var, "bool", "true", var,"","variável");
+	adicionaTabela(var2, "bool", "false", var2,"","variável");
 	}
 	else
 	{
-		adicionaTabela(var, "bool", "false", var);
-		adicionaTabela(var2, "bool", "true", var2);
+		adicionaTabela(var, "bool", "false", var,"","variável");
+		adicionaTabela(var2, "bool", "true", var2,"","variável");
 	}
 	
 }
@@ -245,10 +239,18 @@ comando: bloco
 |	declaracao
 {
 	$$.traducao = $1.traducao;
-};
+}
+| 	BREAK ';' //TODO
+{
+	$$.traducao = "\tgoto label\n";
+}
+|   CONTINUE ';' //TODO
+{
+	$$.traducao = "\tgoto label\n";
+}
+;
 
-atribuicao:
-	ID ATRIBUI expressao ';'
+atribuicao:	ID ATRIBUI expressao ';'
 {
 	bool teste;
 	int bloc;
@@ -260,13 +262,13 @@ atribuicao:
 		{
 			string var = geraVariavelTemporaria();
 			$$.traducao = $3.traducao + "\tstcpy(" + var + ", " + $3.label + ");\n";
-			adicionaTabela($1.label,$3.tipo, $3.valor, var);
+			adicionaTabela($1.label,$3.tipo, $3.valor, var,"","variável");
 		}
 		else 
 		{
 			string var = geraVariavelTemporaria();
 			$$.traducao = $3.traducao + "\t" + var + " = " + $3.label + ";\n";
-			adicionaTabela($1.label,$3.tipo, $3.valor, var);
+			adicionaTabela($1.label,$3.tipo, $3.valor, var,"","variável");
 		}
 	}
 	else
@@ -322,10 +324,9 @@ atribuicao:
 		}
 		//T_simbolo[bloc][$1.label].valor = T_simbolo[bloc][$3.label].valor;
 	}
-}
-;
+};
 declaracao:
-	TIPO_INT ID ';'
+	TIPO_INT ID vetor ';'
 {
 	bool teste;
 	int bloc;
@@ -334,7 +335,7 @@ declaracao:
 	{
 		string var = geraVariavelTemporaria();
 		$$.traducao = "";
-		adicionaTabela($2.label, "int", "N/A", var);
+		adicionaTabela($2.label, "int", "N/A", var,"","variável");
 		
 	}else{
 		yyerror("Variável já declarada!");
@@ -349,7 +350,7 @@ declaracao:
 	{
 		string var = geraVariavelTemporaria();
 		$$.traducao = "";
-		adicionaTabela($2.label, "float", "N/A", var);
+		adicionaTabela($2.label, "float", "N/A", var,"","variável");
 	}else{
 		yyerror("Variável já declarada!");
 	}
@@ -363,7 +364,7 @@ declaracao:
 	{
 		string var = geraVariavelTemporaria();
 		$$.traducao = "";
-		adicionaTabela($2.label, "bool", "N/A", var);
+		adicionaTabela($2.label, "bool", "N/A", var,"","variável");
 	}else{
 		yyerror("Variável já declarada!");
 	}
@@ -377,7 +378,7 @@ declaracao:
 	{
 		string var = geraVariavelTemporaria();
 		$$.traducao = "";
-		adicionaTabela($2.label, "char", "N/A", var);
+		adicionaTabela($2.label, "char", "N/A", var,"","variável");
 	}else{
 		yyerror("Variável já declarada!");
 	}
@@ -391,11 +392,25 @@ declaracao:
 	{
 		string var = geraVariavelTemporaria();
 		$$.traducao = "";
-		adicionaTabela($2.label, "string", "N/A", var);
+		adicionaTabela($2.label, "string", "N/A", var,"","variável");
 	}else{
 		yyerror("Variável já declarada!");
 	}
 };
+
+vetor:
+	'[' NUM ']'
+{
+	$$.traducao=$0.traducao+"malloc";
+	cout<<$2.traducao;
+}
+|
+{
+	$$.traducao="teste";
+}
+;
+
+
 
 entradas:
 	ID ',' entradas
@@ -418,7 +433,7 @@ expressoes:
 }
 |	expressao
 {
-	$$.traducao = "\n" + $1.traducao + "\tcout << " + $1.label + ";\n";
+	$$.traducao = "\n" + $1.traducao + "cout << " + $1.label + ";\n";
 };
 
 expressao:
@@ -520,7 +535,7 @@ converte:
 
 	$$.label = geraVariavelTemporaria();
 	$$.traducao = $4.traducao + "\t" + $$.label + " = (int)" + $4.label + ";\n";
-	adicionaTabela($$.label, "int", $$.valor, $$.label);
+	adicionaTabela($$.label, "int", $$.valor, $$.label,"","variável");
 	$$.tipo = "int";
 }
 |	'(' TIPO_FLOAT ')' expressao
@@ -529,7 +544,7 @@ converte:
 
 	$$.label = geraVariavelTemporaria();
 	$$.traducao = $4.traducao + "\t" + $$.label + " = (float)" + $4.label + ";\n";
-	adicionaTabela($$.label, "float", $$.valor, $$.label);
+	adicionaTabela($$.label, "float", $$.valor, $$.label,"","variável");
 	$$.tipo = "float";
 }
 |	aritmetica
@@ -587,20 +602,20 @@ aritmetica:
 |	SOMA aritmetica
 {
 	$$.label = geraVariavelTemporaria();
-	adicionaTabela($$.label, $2.tipo, "N/A", $$.label);
-
 	$$.traducao = $2.traducao + "\t" + $$.label + " = " + $2.label + ";\n";
 	$$.tipo = $2.tipo;
 	$$.valor = $2.valor;
+
+	adicionaTabela($$.label, $2.tipo, "N/A", $$.label,"","variável");
 }
 |	SUBTRAI aritmetica
 {
 	$$.label = geraVariavelTemporaria();
-	adicionaTabela($$.label, $2.tipo, "N/A", $$.label);
-
 	$$.traducao = $2.traducao + "\t" + $$.label + " = " + "-" + " " + $2.label + ";\n";
 	$$.tipo = $2.tipo;
 	$$.valor = "-" + $2.valor;
+
+	adicionaTabela($$.label, $$.tipo, "N/A", $$.label,"","variável");
 }
 ;
 fator:
@@ -612,7 +627,7 @@ fator:
 	$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
 	$$.tipo = "int";
 	$$.valor = $1.traducao;
-	adicionaTabela($$.label, "int", $1.traducao, $$.label);
+	adicionaTabela($$.label, $$.tipo, $1.traducao, $$.label, "","fator");
 }
 |	REAL
 {
@@ -620,7 +635,7 @@ fator:
 	$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
 	$$.tipo = "float";
 	$$.valor = $1.traducao;
-	adicionaTabela($$.label, "float" ,$1.traducao, $$.label);
+	adicionaTabela($$.label, $$.tipo, $1.traducao, $$.label, "","fator");
 }
 |	CHAR
 {
@@ -628,14 +643,14 @@ fator:
 	$$.traducao = "\t" + $$.label + " = " + $1.traducao + "';\n";
 	$$.tipo = "char";
 	$$.valor = $1.traducao;
-	adicionaTabela($$.label, $$.tipo ,$$.valor, $$.label);
+	adicionaTabela($$.label, $$.tipo ,$$.valor, $$.label,"","fator");
 }
 |	STRING
 {
 	$$.tipo = "string";
 	$$.valor = $1.traducao;
 	$$.label = geraVariavelTemporaria();
-	adicionaTabela($1.label, $$.tipo, $$.valor, $$.label);
+	adicionaTabela($$.label, $$.tipo, $$.valor, $$.label,"","fator");
 	$$.traducao = "\tstrcpy(" + $$.label + ", " + $1.traducao + ");\n\t";	
 	
 }	
@@ -657,7 +672,7 @@ fator:
 	$$.traducao = "\t" + $$.label + " = " + "1" + ";\n";
 	$$.tipo = "bool";
 	$$.valor = "true";
-	adicionaTabela($$.label, "bool", "true", $$.label);
+	adicionaTabela($$.label, "bool", "true", $$.label,"","fator");
 }
 | 	FALSO
 {
@@ -665,7 +680,7 @@ fator:
 	$$.traducao = "\t" + $$.label + " = " + "0" + ";\n";
 	$$.tipo = "bool";
 	$$.valor = "false";
-	adicionaTabela($$.label, "bool", "false", $$.label);
+	adicionaTabela($$.label, "bool", "false", $$.label,"","fator");
 }
 |	'(' expressao ')'
 {
@@ -708,7 +723,7 @@ string trad_aritmetica(struct atributos s1, string operador, struct atributos s3
 	if((s1.tipo == "float" || s1.tipo == "int"))
 	{
 		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
-		adicionaTabela(temp, s1.tipo, s1.valor + operador + s3.valor, temp);
+		adicionaTabela(temp, s1.tipo, s1.valor + operador + s3.valor, temp,"","aritmetica");
 	}
 
 	return traducao;
@@ -730,22 +745,22 @@ string trad_relacional(struct atributos s1, string operador, struct atributos s3
 			{
 				if(s1.valor == s3.valor)
 				{
-					adicionaTabela(temp, "bool", "true", temp);
+					adicionaTabela(temp, "bool", "true", temp,"","variável");
 				}
 				else
 				{
-					adicionaTabela(temp, "bool", "false", temp);
+					adicionaTabela(temp, "bool", "false", temp,"","variável");
 				}
 			}
 			else if (operador == "!=")
 			{
 				if(s1.valor != s3.valor)
 				{
-					adicionaTabela(temp, "bool", "true", temp);
+					adicionaTabela(temp, "bool", "true", temp,"","variável");
 				}
 				else
 				{
-					adicionaTabela(temp, "bool", "false", temp);
+					adicionaTabela(temp, "bool", "false", temp,"","variável");
 				}
 			}	
 		}
@@ -759,50 +774,50 @@ string trad_relacional(struct atributos s1, string operador, struct atributos s3
 		{
 			if(s1.valor == s3.valor)
 			{
-				adicionaTabela(temp, "bool", "true", temp);
+				adicionaTabela(temp, "bool", "true", temp,"","variável");
 			}
-			else adicionaTabela(temp, "bool", "false", temp);
+			else adicionaTabela(temp, "bool", "false", temp,"","variável");
 		}
 
 		else if (operador == "!=")
 		{
 			if(s1.valor != s3.valor)
 			{	
-				adicionaTabela(temp, "bool", "true", temp);
+				adicionaTabela(temp, "bool", "true", temp,"","variável");
 			}
-			else adicionaTabela(temp, "bool", "false", temp);
+			else adicionaTabela(temp, "bool", "false", temp,"","variável");
 		}
 		else if(operador == ">")
 		{
 			if(s1.valor > s3.valor)
 			{	
-				adicionaTabela(temp, "bool", "true", temp);
+				adicionaTabela(temp, "bool", "true", temp,"","variável");
 			}
-			else adicionaTabela(temp, "bool", "false", temp);
+			else adicionaTabela(temp, "bool", "false", temp,"","variável");
 		}
 		else if(operador == "<")
 		{
 			if(s1.valor < s3.valor)
 			{	
-				adicionaTabela(temp, "bool", "true", temp);
+				adicionaTabela(temp, "bool", "true", temp,"","variável");
 			}
-			else adicionaTabela(temp, "bool", "false", temp);
+			else adicionaTabela(temp, "bool", "false", temp,"","variável");
 		}
 		else if(operador == "<=")
 		{
 			if(s1.valor <= s3.valor)
 			{	
-				adicionaTabela(temp, "bool", "true", temp);
+				adicionaTabela(temp, "bool", "true", temp,"","variável");
 			}
-			else adicionaTabela(temp, "bool", "false", temp);
+			else adicionaTabela(temp, "bool", "false", temp,"","variável");
 		}
 		else if(operador == ">=")
 		{
 			if(s1.valor >= s3.valor)
 			{	
-				adicionaTabela(temp, "bool", "true", temp);
+				adicionaTabela(temp, "bool", "true", temp,"","variável");
 			}
-			else adicionaTabela(temp, "bool", "false", temp);
+			else adicionaTabela(temp, "bool", "false", temp,"","variável");
 		}
 	}
 
@@ -816,30 +831,30 @@ string trad_logico(struct atributos s1, string operador, struct atributos s3, st
 	if(s1.tipo == "bool")
 	{
 		if((operador == "&&" || operador == "||") && (s1.valor == "true" && s3.valor == "true")){
-			adicionaTabela(temp, "bool", "true", temp);
+			adicionaTabela(temp, "bool", "true", temp,"","variável");
 		}
 		else if(operador == "&&" && (s1.valor == "false" || s3.valor == "false")){
 
-			adicionaTabela(temp, "bool", "false", temp);
+			adicionaTabela(temp, "bool", "false", temp,"","variável");
 		}
 		else if(operador == "||"){
 			if((s1.valor == "false" && s3.valor == "true") || (s1.valor == "true" && s3.valor == "false"))
 			{
-				adicionaTabela(temp, "bool", "true", temp);
+				adicionaTabela(temp, "bool", "true", temp,"","variável");
 			}
 			else if (s1.valor == "false" && s3.valor == "false"){
-				adicionaTabela(temp, "bool", "false", temp);
+				adicionaTabela(temp, "bool", "false", temp,"","variável");
 			}
 		}else
 		{
 			traducao = s1.traducao + "\t" + temp + " = " + operador + " " + s1.label + ";\n";
 			if(s3.valor == "true")
 			{
-				adicionaTabela(temp, "bool", "false", temp);
+				adicionaTabela(temp, "bool", "false", temp,"","variável");
 			}
 			else 
 			{
-				adicionaTabela(temp, "bool", "true", temp);
+				adicionaTabela(temp, "bool", "true", temp,"","variável");
 			}
 		}
 	}else
@@ -889,7 +904,7 @@ tuple<struct atributos, struct atributos> coercao_tipo(struct atributos s1, stru
 		if(tipo3 == "int") // Regra para coerção int
 		{
 			novo.traducao = s3.traducao + + "\t" + novo.label + " = (float)" + s3.label + ";\n";;
-			adicionaTabela(novo.label, "float", to_string(stof(s3.valor)), novo.label);
+			adicionaTabela(novo.label, "float", to_string(stof(s3.valor)), novo.label,"","variável");
 			get<1>(expr) = novo;
 		}
 		else if(tipo3 == "char") // Regra para coerção char
@@ -902,7 +917,7 @@ tuple<struct atributos, struct atributos> coercao_tipo(struct atributos s1, stru
 		if(tipo1 == "int") // Regra para coerção int
 		{
 			novo.traducao = s1.traducao + + "\t" + novo.label + " = (float)" + s1.label + ";\n";;
-			adicionaTabela(novo.label, "float", to_string(stof(s1.valor)), novo.label);
+			adicionaTabela(novo.label, "float", to_string(stof(s1.valor)), novo.label,"","variável");
 			get<0>(expr) = novo;
 		}
 		else if(tipo1 == "char") // Regra para coerção de char
@@ -915,7 +930,7 @@ tuple<struct atributos, struct atributos> coercao_tipo(struct atributos s1, stru
 		if(tipo3 == "char") // Regra para coerção char
 		{
 			novo.traducao = s3.traducao + + "\t" + novo.label + " = (int)" + s3.label + ";\n";;
-			adicionaTabela(novo.label, "int", (s3.valor), novo.label);
+			adicionaTabela(novo.label, "int", (s3.valor), novo.label,"","variável");
 			get<1>(expr) = novo;
 		}
 	}else if(tipo3 == "int") // Regra para coerção int
@@ -923,7 +938,7 @@ tuple<struct atributos, struct atributos> coercao_tipo(struct atributos s1, stru
 		if(tipo1 == "char") // Regra para coerção char
 		{
 			novo.traducao = s1.traducao + + "\t" + novo.label + " = (int)" + s1.label + ";\n";;
-			adicionaTabela(novo.label, "int", (s3.valor), novo.label);
+			adicionaTabela(novo.label, "int", (s3.valor), novo.label,"","variável");
 			get<0>(expr) = novo;
 		}
 	}
@@ -946,7 +961,7 @@ tuple<bool, int> testa_simbolo(string nome)
 	return resp;
 }
 
-void adicionaTabela(string nome, string tipo, string valor, string novo_nome)
+void adicionaTabela(string nome, string tipo, string valor, string novo_nome, string tamanho, string categoria)
 {
 	bool teste;
 	int bloc;
@@ -957,6 +972,8 @@ void adicionaTabela(string nome, string tipo, string valor, string novo_nome)
 		novo.tipo = tipo;
 		novo.nome_temp = novo_nome;
 		novo.valor = valor;
+		novo.tamanho = tamanho;
+		novo.categoria = categoria;
 		T_simbolo[bloco_qtd][nome] = novo;
 	}
 }
@@ -986,7 +1003,10 @@ string traducao_declaracao()
 		}
 		if(val.tipo=="string"){			
 			
-			traducao = traducao + "\t"+ "char" + " " + val.nome_temp + "["+ to_string(size(val.valor)-1)+ "]" +";\n";
+			traducao = traducao + "\t"+ "char *" + val.nome_temp + ";\n\t" + val.nome_temp + " = malloc("+ to_string(size(val.valor)-1)+ "*sizeof(char));\n";
+			continue;
+		}
+		if(val.tipo=="label"){			
 			continue;
 		}
 		
@@ -1000,11 +1020,11 @@ void imprimeTabela()
 {
 	for (int i = 0; i <= bloco_qtd_debug; i++)
 	{
-		cout << "\n\n\t\tTABELA DE SíMBOLOS | BLOCO " << i <<"\n\nSÍMBOLO\t\tTIPO\tATRIBUIÇÃO\tNOME\n-------------------------------------------------------------\n";
+		cout << "\n\n\t\tTABELA DE SíMBOLOS | BLOCO " << i <<"\n\nSÍMBOLO\t\tTIPO\tCATEGORIA\tATRIBUIÇÃO\tTAMANHO\t\tNOME\n-------------------------------------------------------------------------\n";
 		for(auto const& [key, val]: T_debug[i]) {
-			cout << key << "\t\t" + val.tipo << "\t" + val.valor << "\t\t" + val.nome_temp<<"\n";
+			cout << key << "\t\t" + val.tipo << "\t" + val.categoria << "\t" + val.valor << "\t\t" + val.tamanho << "\t\t" + val.nome_temp<<"\n";
 		}
-		cout << "-------------------------------------------------------------\n";
+		cout << "-------------------------------------------------------------------------\n";
 	}
 }
 
