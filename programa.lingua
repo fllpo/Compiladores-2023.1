@@ -1,8 +1,6 @@
 int main()
-{
-	
-	int teste[3];
-		
-
-
+{	
+	tamanho=4;
+	int teste1[tamanho];
+	float teste2[3];
 }
