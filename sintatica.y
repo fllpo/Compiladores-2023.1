@@ -71,7 +71,7 @@ string declaracoes = "";
 
 %token MAIN ID NUM REAL CHAR STRING FIM ERROR
 %token TIPO_INT TIPO_FLOAT TIPO_CHAR TIPO_BOOL TIPO_STRING
-%token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE 
+%token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE UNARIOMAIS UNARIOMENOS
 %token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO NEGAR
 %token IF ELSE WHILE DO FOR CONTINUE BREAK
 %token SCAN PRINT
@@ -324,7 +324,30 @@ atribuicao:	ID ATRIBUI expressao ';'
 		}
 		//T_simbolo[bloc][$1.label].valor = T_simbolo[bloc][$3.label].valor;
 	}
-};
+}
+|	ID UNARIOMAIS ';'
+{
+	bool teste;
+	int bloc;
+	tie(teste, bloc) = testa_simbolo($1.label);
+
+	if ((teste))
+	{
+		$$.traducao = "\t" + T_simbolo[bloco_qtd][$1.label].nome_temp + " = " + T_simbolo[bloco_qtd][$1.label].nome_temp + " + 1;\n";
+	}
+}
+|	ID UNARIOMENOS ';'
+{
+	bool teste;
+	int bloc;
+	tie(teste, bloc) = testa_simbolo($1.label);
+
+	if ((teste))
+	{
+		$$.traducao = "\t" + T_simbolo[bloco_qtd][$1.label].nome_temp + " = " + T_simbolo[bloco_qtd][$1.label].nome_temp + " - 1;\n";
+	}
+}
+;
 declaracao:
 	TIPO_INT ID ';'
 {
@@ -777,9 +800,9 @@ string trad_aritmetica(struct atributos s1, string operador, struct atributos s3
 	}
 
 	if((s1.tipo == "float" || s1.tipo == "int"))
-	{
-		traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
-		adicionaTabela(temp, s1.tipo, s1.valor + operador + s3.valor, temp,"","aritmetica");
+	{	
+			traducao = s1.traducao + s3.traducao + "\t" + temp + " = " + s1.label + " " + operador + " " + s3.label + ";\n";
+			adicionaTabela(temp, s1.tipo, s1.valor + operador + s3.valor, temp,"","aritmetica");
 	}
 
 	return traducao;
@@ -925,7 +948,7 @@ string traducao_expressao(struct atributos s1, string operador, struct atributos
 {
 	string traducao = "";
 
-	if(operador == "+"|| operador == "-" || operador == "*" || operador == "/")
+	if(operador == "+"|| operador == "-" || operador == "*" || operador == "/"|| operador == "++")
 	{
 		return trad_aritmetica(s1, operador, s3, temp);
 	}
@@ -937,6 +960,7 @@ string traducao_expressao(struct atributos s1, string operador, struct atributos
 	{
 		return trad_relacional(s1, operador, s3, temp);
 	}
+
 	return traducao;
 }
 

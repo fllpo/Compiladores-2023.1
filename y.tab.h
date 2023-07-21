@@ -72,26 +72,28 @@ extern int yydebug;
     SUBTRAI = 273,                 /* SUBTRAI  */
     MULTIPLICA = 274,              /* MULTIPLICA  */
     DIVIDE = 275,                  /* DIVIDE  */
-    MAIOR = 276,                   /* MAIOR  */
-    MENOR = 277,                   /* MENOR  */
-    MAIOR_IGUAL = 278,             /* MAIOR_IGUAL  */
-    MENOR_IGUAL = 279,             /* MENOR_IGUAL  */
-    IGUAL = 280,                   /* IGUAL  */
-    DIFERENTE = 281,               /* DIFERENTE  */
-    E_LOGICO = 282,                /* E_LOGICO  */
-    OU_LOGICO = 283,               /* OU_LOGICO  */
-    VERDADEIRO = 284,              /* VERDADEIRO  */
-    FALSO = 285,                   /* FALSO  */
-    NEGAR = 286,                   /* NEGAR  */
-    IF = 287,                      /* IF  */
-    ELSE = 288,                    /* ELSE  */
-    WHILE = 289,                   /* WHILE  */
-    DO = 290,                      /* DO  */
-    FOR = 291,                     /* FOR  */
-    CONTINUE = 292,                /* CONTINUE  */
-    BREAK = 293,                   /* BREAK  */
-    SCAN = 294,                    /* SCAN  */
-    PRINT = 295                    /* PRINT  */
+    UNARIOMAIS = 276,              /* UNARIOMAIS  */
+    UNARIOMENOS = 277,             /* UNARIOMENOS  */
+    MAIOR = 278,                   /* MAIOR  */
+    MENOR = 279,                   /* MENOR  */
+    MAIOR_IGUAL = 280,             /* MAIOR_IGUAL  */
+    MENOR_IGUAL = 281,             /* MENOR_IGUAL  */
+    IGUAL = 282,                   /* IGUAL  */
+    DIFERENTE = 283,               /* DIFERENTE  */
+    E_LOGICO = 284,                /* E_LOGICO  */
+    OU_LOGICO = 285,               /* OU_LOGICO  */
+    VERDADEIRO = 286,              /* VERDADEIRO  */
+    FALSO = 287,                   /* FALSO  */
+    NEGAR = 288,                   /* NEGAR  */
+    IF = 289,                      /* IF  */
+    ELSE = 290,                    /* ELSE  */
+    WHILE = 291,                   /* WHILE  */
+    DO = 292,                      /* DO  */
+    FOR = 293,                     /* FOR  */
+    CONTINUE = 294,                /* CONTINUE  */
+    BREAK = 295,                   /* BREAK  */
+    SCAN = 296,                    /* SCAN  */
+    PRINT = 297                    /* PRINT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -118,26 +120,28 @@ extern int yydebug;
 #define SUBTRAI 273
 #define MULTIPLICA 274
 #define DIVIDE 275
-#define MAIOR 276
-#define MENOR 277
-#define MAIOR_IGUAL 278
-#define MENOR_IGUAL 279
-#define IGUAL 280
-#define DIFERENTE 281
-#define E_LOGICO 282
-#define OU_LOGICO 283
-#define VERDADEIRO 284
-#define FALSO 285
-#define NEGAR 286
-#define IF 287
-#define ELSE 288
-#define WHILE 289
-#define DO 290
-#define FOR 291
-#define CONTINUE 292
-#define BREAK 293
-#define SCAN 294
-#define PRINT 295
+#define UNARIOMAIS 276
+#define UNARIOMENOS 277
+#define MAIOR 278
+#define MENOR 279
+#define MAIOR_IGUAL 280
+#define MENOR_IGUAL 281
+#define IGUAL 282
+#define DIFERENTE 283
+#define E_LOGICO 284
+#define OU_LOGICO 285
+#define VERDADEIRO 286
+#define FALSO 287
+#define NEGAR 288
+#define IF 289
+#define ELSE 290
+#define WHILE 291
+#define DO 292
+#define FOR 293
+#define CONTINUE 294
+#define BREAK 295
+#define SCAN 296
+#define PRINT 297
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

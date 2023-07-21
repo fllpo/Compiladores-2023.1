@@ -6,8 +6,6 @@ extern int num_linha;
 espaco              [ \t]
 digito              [0-9]
 letra               [A-Za-z_]
-unario              "++"|"--"
-
 
 DELIM               {espaco}+
 NUM                 {digito}+ 
@@ -57,6 +55,8 @@ ID                  {letra}({letra}|{NUM})*
 "break"             return BREAK;
 "scan"              return SCAN;
 "print"             return PRINT;
+"++"                return UNARIOMAIS;
+"--"                return UNARIOMENOS;
 
 
 {NUM}               {yylval.traducao = yytext; return NUM;}
