@@ -20,7 +20,13 @@
 		if (!teste)																			\
 		{																					\
 			yyerror("A variável \"" + id_nome + "\" não foi declarada!");					\
-		}			
+		}
+
+#define VERIFICACAO_FUNC(nome)															\
+		if (!(T_funcs.count(nome)==1))													\
+		{																					\
+			yyerror("A função \"" + nome + "\" não foi declarada!");					\
+		}
 
 using namespace std;
 
@@ -41,10 +47,18 @@ struct simbolo
 	string categoria;
 };
 
+struct funcao
+{
+	string nome;
+	string tipo;
+	vector<simbolo> param;
+};
+
 int yylex(void);
 void yyerror(string);
 
 string geraVariavelTemporaria(); // Gera um nome de variável temporária
+string geraFuncao();
 string geraLabel();
 string trad_aritmetica(struct atributos, string, struct atributos, string);
 string trad_relacional(struct atributos, string, struct atributos, string);
@@ -61,12 +75,16 @@ void imprimeTabela(); // Imprime a tabela de símbolos
 vector<map<string, simbolo>> T_simbolo; // Mapa, identificado pelo nome da variável
 vector<map<string, simbolo>> T_debug;
 
+map<string, funcao> T_funcs; // Mapa identificando funções
+
 int tmp_qnt = 0;
 int num_linha = 1;
 int bloco_qtd = -1;
 int bloco_qtd_debug = -1;
-int label_qnt=0;
+int label_qnt = 0;
+int func_qnt = 0;
 string declaracoes = "";
+
 %}
 
 %token MAIN ID NUM REAL CHAR STRING FIM ERROR
@@ -94,10 +112,11 @@ globais: global globais
 {
 	$$.traducao = $1.traducao + $2.traducao;
 }
-|	global
+|	TIPO_INT MAIN '(' ')' bloco
 {
-	$$.traducao = $1.traducao;
+	$$.traducao = "\n\nint main(void)\n{" + declaracoes + $5.traducao + "\n\treturn 0;\n}\n";
 };
+
 global:	declaracao
 {
 	$$.traducao = $1.traducao;
@@ -106,14 +125,28 @@ global:	declaracao
 {
 	$$.traducao = $1.traducao;
 }
-|	fn_main
+|	ID '(' parametros ')' '{' comandos '}'
+{
+	string var = geraFuncao();
+	T_funcs[$1.traducao].nome = var;
+	$$.traducao = "\n\nint " + var + "("+ $3.traducao + ")\n{" + declaracoes + $6.traducao + "\n\treturn 0;\n}\n";
+};
+
+parametros:
+	parametro ',' parametros
+{
+	$$.traducao = $1.traducao + ", " + $2.traducao;
+}
+|	parametro
 {
 	$$.traducao = $1.traducao;
 };
 
-fn_main: TIPO_INT MAIN '(' ')' bloco
+parametro:
+	ID
 {
-	$$.traducao = "\n\nint main(void)\n{" + declaracoes + $5.traducao + "\n\treturn 0;\n}\n";
+	int num_bloc;
+	$$.traducao = $1.label; // WIP - Terminar
 };
 
 bloco: blocofuncao '{' comandos '}'
@@ -348,6 +381,7 @@ atribuicao:	ID ATRIBUI expressao ';'
 	}
 }
 ;
+
 declaracao:
 	TIPO_INT ID ';'
 {
@@ -778,6 +812,11 @@ int yyparse();
 string geraVariavelTemporaria()
 {
 	return "TMP_" + to_string(tmp_qnt++);
+}
+
+string geraFuncao()
+{
+	return "FUNC_" + to_string(func_qnt++);
 }
 
 string geraLabel()
