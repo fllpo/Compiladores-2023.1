@@ -1,7 +1,14 @@
-fun(a){}
+int fun(int a)
+{
+	a = 888;
+}
 
-int main()
+float fun2(float a)
+{
+	a = 8.88;
+}
+
+main()
 {	
-	teste=5;
-	teste++;
+	i = 999;
 }

@@ -24,7 +24,7 @@
 
 #define VERIFICACAO_FUNC(nome)															\
 		if (!(T_funcs.count(nome)==1))													\
-		{																					\
+		{																				\
 			yyerror("A função \"" + nome + "\" não foi declarada!");					\
 		}
 
@@ -76,6 +76,7 @@ vector<map<string, simbolo>> T_simbolo; // Mapa, identificado pelo nome da vari�
 vector<map<string, simbolo>> T_debug;
 
 map<string, funcao> T_funcs; // Mapa identificando funções
+vector<simbolo> param;
 
 int tmp_qnt = 0;
 int num_linha = 1;
@@ -88,7 +89,7 @@ string declaracoes = "";
 %}
 
 %token MAIN ID NUM REAL CHAR STRING FIM ERROR
-%token TIPO_INT TIPO_FLOAT TIPO_CHAR TIPO_BOOL TIPO_STRING
+%token TIPO
 %token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE UNARIOMAIS UNARIOMENOS
 %token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO NEGAR
 %token IF ELSE WHILE DO FOR CONTINUE BREAK
@@ -112,9 +113,9 @@ globais: global globais
 {
 	$$.traducao = $1.traducao + $2.traducao;
 }
-|	TIPO_INT MAIN '(' ')' bloco
+|	MAIN '(' ')' bloco
 {
-	$$.traducao = "\n\nint main(void)\n{" + declaracoes + $5.traducao + "\n\treturn 0;\n}\n";
+	$$.traducao = "\n\nint main(void)\n{" + declaracoes + $4.traducao + "\n\treturn 0;\n}\n";
 };
 
 global:	declaracao
@@ -125,14 +126,31 @@ global:	declaracao
 {
 	$$.traducao = $1.traducao;
 }
-|	ID '(' parametros ')' '{' comandos '}'
+|	TIPO ID blocofuncao '(' parametros ')' '{' comandos '}'
 {
 	string var = geraFuncao();
-	T_funcs[$1.traducao].nome = var;
-	$$.traducao = "\n\nint " + var + "("+ $3.traducao + ")\n{" + declaracoes + $6.traducao + "\n\treturn 0;\n}\n";
+	T_funcs[$3.label] = {var, $1.tipo, param};
+	$$.traducao = "\n\n" + $1.tipo + " " + var + "("+ $5.traducao + ")\n{\n" + declaracoes + "\n" + $8.traducao + "\n\treturn 0;\n}\n";
+	
+	T_debug.push_back(T_simbolo[bloco_qtd]);
+	bloco_qtd--;
+	T_simbolo.pop_back();
+	
+	param = {};
+	declaracoes = "";
 };
 
 parametros:
+	p1
+{
+	$$.traducao = $1.traducao;
+}
+|
+{
+	$$.traducao = "";
+};
+
+p1:
 	parametro ',' parametros
 {
 	$$.traducao = $1.traducao + ", " + $2.traducao;
@@ -143,10 +161,12 @@ parametros:
 };
 
 parametro:
-	ID
+	TIPO ID
 {
-	int num_bloc;
-	$$.traducao = $1.label; // WIP - Terminar
+	string var = geraVariavelTemporaria();
+	adicionaTabela($2.label, $1.tipo, "N/A", var,"","variável");
+	param.push_back(T_simbolo[bloco_qtd][$2.label]);
+	$$.traducao = $1.tipo + " " + var;
 };
 
 bloco: blocofuncao '{' comandos '}'
@@ -360,30 +380,18 @@ atribuicao:	ID ATRIBUI expressao ';'
 }
 |	ID UNARIOMAIS ';'
 {
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($1.label);
-
-	if ((teste))
-	{
-		$$.traducao = "\t" + T_simbolo[bloco_qtd][$1.label].nome_temp + " = " + T_simbolo[bloco_qtd][$1.label].nome_temp + " + 1;\n";
-	}
+	VERIFICACAO_ID($1.label, bloc)
+	$$.traducao = "\t" + T_simbolo[bloc][$1.label].nome_temp + " = " + T_simbolo[bloc][$1.label].nome_temp + " + 1;\n";
 }
 |	ID UNARIOMENOS ';'
 {
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($1.label);
-
-	if ((teste))
-	{
-		$$.traducao = "\t" + T_simbolo[bloco_qtd][$1.label].nome_temp + " = " + T_simbolo[bloco_qtd][$1.label].nome_temp + " - 1;\n";
-	}
+	VERIFICACAO_ID($1.label, bloc)
+	$$.traducao = "\t" + T_simbolo[bloc][$1.label].nome_temp + " = " + T_simbolo[bloc][$1.label].nome_temp + " - 1;\n";
 }
 ;
 
 declaracao:
-	TIPO_INT ID ';'
+	TIPO ID ';'
 {
 	bool teste;
 	int bloc;
@@ -392,13 +400,12 @@ declaracao:
 	{
 		string var = geraVariavelTemporaria();
 		$$.traducao = "";
-		adicionaTabela($2.label, "int", "N/A", var,"","variável");
-		
+		adicionaTabela($2.label, $1.tipo, "N/A", var,"","variável");
 	}else{
 		yyerror("Variável já declarada!");
 	}
 }
-|	TIPO_INT ID '[' ID ']' ';' //OK
+|	TIPO ID '[' ID ']' ';' //OK
 {
 	bool teste;
 	int bloc;
@@ -406,14 +413,13 @@ declaracao:
 	if ((!teste) || bloc != bloco_qtd)
 	{		
 			string var = geraVariavelTemporaria();
-			$$.traducao = "\n\t"+ var + " = malloc(" + T_simbolo[bloco_qtd][$4.label].nome_temp + " * sizeof(int));\n\n";
-			adicionaTabela($2.label, "int", "N/A", var, T_simbolo[bloco_qtd][$4.label].valor, "vetor");
-		
+			$$.traducao = "\n\t"+ var + " = malloc(" + T_simbolo[bloco_qtd][$4.label].nome_temp + " * sizeof(" + $1.tipo + "));\n\n";
+			adicionaTabela($2.label, $1.tipo, "N/A", var, T_simbolo[bloco_qtd][$4.label].valor, "vetor");
 	}else{
 		yyerror("Variável já declarada!");
 	}
 }
-|	TIPO_INT ID '[' NUM ']' ';'
+|	TIPO ID '[' NUM ']' ';'
 {
 	bool teste;
 	int bloc;
@@ -423,103 +429,11 @@ declaracao:
 	{		
 			string var = geraVariavelTemporaria();
 			string var2 = geraVariavelTemporaria();
-			$$.traducao = "\t" + var + " = " + $4.traducao +";\n\t"+ var2 + " = malloc(" + var + " * sizeof(int));\n\n";
+			$$.traducao = "\t" + var + " = " + $4.traducao +";\n\t"+ var2 + " = malloc(" + var + " * sizeof(" + $1.tipo + "));\n\n";
 			
 			adicionaTabela(var, "int", $4.traducao, var, "", "variável");
-			adicionaTabela($2.label, "int", "N/A", var2, $4.traducao, "vetor");
+			adicionaTabela($2.label, $1.tipo, "N/A", var2, $4.traducao, "vetor");
 
-	}else{
-		yyerror("Variável já declarada!");
-	}
-}
-|	TIPO_FLOAT ID ';'
-{
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($2.label);
-	if ((!teste) || bloc != bloco_qtd)
-	{
-		string var = geraVariavelTemporaria();
-		$$.traducao = "";
-		adicionaTabela($2.label, "float", "N/A", var,"","variável");
-	}else{
-		yyerror("Variável já declarada!");
-	}
-}
-|	TIPO_FLOAT ID '[' ID ']' ';'
-{
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($2.label);
-	if ((!teste) || bloc != bloco_qtd)
-	{		
-			string var = geraVariavelTemporaria();
-			$$.traducao = "\n\t"+ var + " = malloc(" + T_simbolo[bloco_qtd][$4.label].nome_temp + " * sizeof(float));\n\n";
-			adicionaTabela($2.label, "float", "N/A", var, T_simbolo[bloco_qtd][$4.label].valor, "vetor");
-		
-	}else{
-		yyerror("Variável já declarada!");
-	}
-}
-|	TIPO_FLOAT ID '[' NUM ']' ';'
-{
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($2.label);
-
-	if ((!teste) || bloc != bloco_qtd)
-	{		
-			string var = geraVariavelTemporaria();
-			string var2 = geraVariavelTemporaria();
-			
-			$$.traducao = "\t" + var + " = " + $4.traducao +";\n\t"+ var2 + " = malloc(" + var + " * sizeof(float));\n\n";
-			
-			adicionaTabela(var, "int", $4.traducao, var, "", "variável");
-			
-			adicionaTabela($2.label, "float", "N/A", var2, $4.traducao, "vetor");
-
-	}else{
-		yyerror("Variável já declarada!");
-	}
-}
-|	TIPO_BOOL ID ';'
-{
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($2.label);
-	if ((!teste) || bloc != bloco_qtd)
-	{
-		string var = geraVariavelTemporaria();
-		$$.traducao = "";
-		adicionaTabela($2.label, "bool", "N/A", var,"","variável");
-	}else{
-		yyerror("Variável já declarada!");
-	}
-}
-|	TIPO_CHAR ID ';'
-{
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($2.label);
-	if ((!teste) || bloc != bloco_qtd)
-	{
-		string var = geraVariavelTemporaria();
-		$$.traducao = "";
-		adicionaTabela($2.label, "char", "N/A", var,"","variável");
-	}else{
-		yyerror("Variável já declarada!");
-	}
-}
-|	TIPO_STRING ID ';'
-{
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($2.label);
-	if ((!teste) || bloc != bloco_qtd)
-	{
-		string var = geraVariavelTemporaria();
-		$$.traducao = "";
-		adicionaTabela($2.label, "string", "N/A", var,"","variável");
 	}else{
 		yyerror("Variável já declarada!");
 	}
@@ -529,13 +443,11 @@ entradas:
 	ID ',' entradas
 {
 	VERIFICACAO_ID($1.label, bloc)
-
 	$$.traducao = "\n\tcin >> " + T_simbolo[bloc][$1.label].nome_temp + ";" + $3.traducao;
 }
 |	ID
 {
 	VERIFICACAO_ID($1.label, bloc)
-
 	$$.traducao = "\n\tcin >> " + T_simbolo[bloc][$1.label].nome_temp + ";\n";
 };
 
@@ -640,25 +552,25 @@ relacao:
 	$$.tipo = $1.tipo;
 	$$.valor = $1.valor;
 };
+
 converte:
 // Conversão explicita
-	'(' TIPO_INT ')' expressao
+	'(' TIPO ')' expressao
 {
+	if($2.tipo != "int" || $2.tipo != "float")
+	{
+		yyerror("A converção explicita para o tipo: \"" + $2.tipo + "\" não é suportada!");
+	}
+	if($4.tipo == "string")
+	{
+		yyerror("A converção explicita a partir do tipo: \"string\" não é suportada!");
+	}
 	$$.valor = to_string(stoi($4.valor));
 
 	$$.label = geraVariavelTemporaria();
-	$$.traducao = $4.traducao + "\t" + $$.label + " = (int)" + $4.label + ";\n";
-	adicionaTabela($$.label, "int", $$.valor, $$.label,"","variável");
-	$$.tipo = "int";
-}
-|	'(' TIPO_FLOAT ')' expressao
-{
-	$$.valor = to_string(stof($4.valor));
-
-	$$.label = geraVariavelTemporaria();
-	$$.traducao = $4.traducao + "\t" + $$.label + " = (float)" + $4.label + ";\n";
-	adicionaTabela($$.label, "float", $$.valor, $$.label,"","variável");
-	$$.tipo = "float";
+	$$.traducao = $4.traducao + "\t" + $$.label + " = (" + $2.tipo + ")" + $4.label + ";\n";
+	adicionaTabela($$.label, $2.tipo, $$.valor, $$.label,"","variável");
+	$$.tipo = $2.label;
 }
 |	aritmetica
 {
@@ -666,8 +578,7 @@ converte:
 	$$.label = $1.label;
 	$$.tipo = $1.tipo;
 	$$.valor = $1.valor;
-}
-;
+};
 
 aritmetica:
 // 	Operadores matemáticos
