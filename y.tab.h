@@ -57,38 +57,34 @@ extern int yydebug;
     STRING = 263,
     FIM = 264,
     ERROR = 265,
-    TIPO_INT = 266,
-    TIPO_FLOAT = 267,
-    TIPO_CHAR = 268,
-    TIPO_BOOL = 269,
-    TIPO_STRING = 270,
-    ATRIBUI = 271,
-    SOMA = 272,
-    SUBTRAI = 273,
-    MULTIPLICA = 274,
-    DIVIDE = 275,
-    UNARIOMAIS = 276,
-    UNARIOMENOS = 277,
-    MAIOR = 278,
-    MENOR = 279,
-    MAIOR_IGUAL = 280,
-    MENOR_IGUAL = 281,
-    IGUAL = 282,
-    DIFERENTE = 283,
-    E_LOGICO = 284,
-    OU_LOGICO = 285,
-    VERDADEIRO = 286,
-    FALSO = 287,
-    NEGAR = 288,
-    IF = 289,
-    ELSE = 290,
-    WHILE = 291,
-    DO = 292,
-    FOR = 293,
-    CONTINUE = 294,
-    BREAK = 295,
-    SCAN = 296,
-    PRINT = 297
+    TIPO = 266,
+    ATRIBUI = 267,
+    SOMA = 268,
+    SUBTRAI = 269,
+    MULTIPLICA = 270,
+    DIVIDE = 271,
+    UNARIOMAIS = 272,
+    UNARIOMENOS = 273,
+    MAIOR = 274,
+    MENOR = 275,
+    MAIOR_IGUAL = 276,
+    MENOR_IGUAL = 277,
+    IGUAL = 278,
+    DIFERENTE = 279,
+    E_LOGICO = 280,
+    OU_LOGICO = 281,
+    VERDADEIRO = 282,
+    FALSO = 283,
+    NEGAR = 284,
+    IF = 285,
+    ELSE = 286,
+    WHILE = 287,
+    DO = 288,
+    FOR = 289,
+    CONTINUE = 290,
+    BREAK = 291,
+    SCAN = 292,
+    PRINT = 293
   };
 #endif
 /* Tokens.  */
@@ -100,38 +96,34 @@ extern int yydebug;
 #define STRING 263
 #define FIM 264
 #define ERROR 265
-#define TIPO_INT 266
-#define TIPO_FLOAT 267
-#define TIPO_CHAR 268
-#define TIPO_BOOL 269
-#define TIPO_STRING 270
-#define ATRIBUI 271
-#define SOMA 272
-#define SUBTRAI 273
-#define MULTIPLICA 274
-#define DIVIDE 275
-#define UNARIOMAIS 276
-#define UNARIOMENOS 277
-#define MAIOR 278
-#define MENOR 279
-#define MAIOR_IGUAL 280
-#define MENOR_IGUAL 281
-#define IGUAL 282
-#define DIFERENTE 283
-#define E_LOGICO 284
-#define OU_LOGICO 285
-#define VERDADEIRO 286
-#define FALSO 287
-#define NEGAR 288
-#define IF 289
-#define ELSE 290
-#define WHILE 291
-#define DO 292
-#define FOR 293
-#define CONTINUE 294
-#define BREAK 295
-#define SCAN 296
-#define PRINT 297
+#define TIPO 266
+#define ATRIBUI 267
+#define SOMA 268
+#define SUBTRAI 269
+#define MULTIPLICA 270
+#define DIVIDE 271
+#define UNARIOMAIS 272
+#define UNARIOMENOS 273
+#define MAIOR 274
+#define MENOR 275
+#define MAIOR_IGUAL 276
+#define MENOR_IGUAL 277
+#define IGUAL 278
+#define DIFERENTE 279
+#define E_LOGICO 280
+#define OU_LOGICO 281
+#define VERDADEIRO 282
+#define FALSO 283
+#define NEGAR 284
+#define IF 285
+#define ELSE 286
+#define WHILE 287
+#define DO 288
+#define FOR 289
+#define CONTINUE 290
+#define BREAK 291
+#define SCAN 292
+#define PRINT 293
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

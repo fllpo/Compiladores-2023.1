@@ -21,11 +21,7 @@ ID                  {letra}({letra}|{NUM})*
 
 "main"		        return MAIN;
 
-"int"		        return TIPO_INT;
-"float"	            return TIPO_FLOAT;
-"char"	            return TIPO_CHAR;
-"bool"              return TIPO_BOOL;
-"string"            return TIPO_STRING;
+"int"|"float"|"char"|"bool"|"string"		        {yylval.tipo = yytext; return TIPO;}
 
 [(){}[\];,:]	    return *yytext;
 
