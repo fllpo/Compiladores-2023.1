@@ -22,12 +22,6 @@
 			yyerror("A variável \"" + id_nome + "\" não foi declarada!");					\
 		}
 
-#define VERIFICACAO_FUNC(nome)															\
-		if (!(T_funcs.count(nome)==1))													\
-		{																				\
-			yyerror("A função \"" + nome + "\" não foi declarada!");					\
-		}
-
 using namespace std;
 
 struct atributos
@@ -70,6 +64,9 @@ tuple<struct atributos, struct atributos> coercao_tipo(struct atributos, struct 
 tuple<bool, int> testa_simbolo(string); // Testa se a variável está na tabela (se já foi declarada)
 string tipo_simbolo(string); // Retorna o tipo do símbolo caso esse esteja na tabela
 string traducao_declaracao(); // Retorna a tradução de todas as declarações do código intermediário, no topo de seu bloco_qtd
+inline bool funcao_existe(string nome);
+inline string tipo_funcao(string nome);
+string verificaFuncao(string tipo, string nome, vector<simbolo> v);
 void imprimeTabela(); // Imprime a tabela de símbolos
 
 vector<map<string, simbolo>> T_simbolo; // Mapa, identificado pelo nome da variável
@@ -129,15 +126,17 @@ global:	declaracao
 |	TIPO ID blocofuncao '(' parametros ')' '{' comandos '}'
 {
 	string var = geraFuncao();
-	T_funcs[$3.label] = {var, $1.tipo, param};
+	T_funcs[$2.label] = {var, $1.tipo, param};
 	$$.traducao = "\n\n" + $1.tipo + " " + var + "("+ $5.traducao + ")\n{\n" + declaracoes + "\n" + $8.traducao + "\n\treturn 0;\n}\n";
 	
 	T_debug.push_back(T_simbolo[bloco_qtd]);
 	bloco_qtd--;
 	T_simbolo.pop_back();
 	
-	param = {};
+	vector<simbolo> a;
+	param = a;
 	declaracoes = "";
+	//cout << param.empty() << endl;
 };
 
 parametros:
@@ -712,6 +711,10 @@ fator:
 	$$.label = $2.label;
 	$$.tipo = $2.tipo;
 	$$.valor = $2.valor;
+}
+|	ID '(' expressoes ')'
+{
+
 };
 
 %%
@@ -922,6 +925,9 @@ tuple<struct atributos, struct atributos> coercao_tipo(struct atributos s1, stru
 	if(tipo1 == tipo3)
 		return expr;
 
+	if(tipo1 == "string" || tipo3 == "string")
+		yyerror("Tipo string não suporta coerção");
+
 	if(tipo1 == "bool" || tipo3 == "bool")
 		yyerror("Tipo booleano não suporta coerção");
 	
@@ -1045,6 +1051,42 @@ string traducao_declaracao()
 		
 	}
 	return traducao;
+}
+
+inline bool funcao_existe(string nome)
+{
+	return T_funcs.count(nome) == 1;
+}
+
+inline string tipo_funcao(string nome)
+{
+	return T_funcs[nome].tipo;
+}
+
+string verificaFuncao(string tipo, string nome, vector<simbolo> v)
+{
+	struct atributos s1, s3;
+	if(funcao_existe(nome))
+	{
+		if(v.size()!=T_funcs[nome].param.size())
+		yyerror("O número de parametros na função não é compátivel");
+		for (int i; i<v.size();i++)
+		{
+			if(T_funcs[nome].param[i].tipo!=v[i].tipo)
+			{
+				struct simbolo c1 = T_funcs[nome].param[i];
+				struct simbolo c2 = v[i];
+				s1 = {c1.nome_temp, "", c1.tipo, c1.valor};
+				s3 = {c2.nome_temp, "", c2.tipo, c2.valor};
+				COERCAO(s1, s3, e1, e3);
+				yyerror("A função esperava " + T_funcs[nome].param[i].tipo + ", mas recebeu " + v[i].tipo + " na posição " + to_string(i) + ".");
+			}
+		}
+	}else
+	{
+		yyerror("Função \"" + nome + "\" não definida!");
+	}
+	return "";
 }
 
 void imprimeTabela()
