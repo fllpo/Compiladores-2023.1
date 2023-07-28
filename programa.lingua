@@ -1,3 +1,14 @@
+int a;
+int fun(int a)
+{
+	a = 888;
+}
+
+float fun2(float a)
+{
+	a = 8.88;
+}
+
 main()
 {	
 
