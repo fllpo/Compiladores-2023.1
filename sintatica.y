@@ -67,6 +67,7 @@ string traducao_declaracao(); // Retorna a tradução de todas as declarações 
 inline bool funcao_existe(string nome);
 inline string tipo_funcao(string nome);
 string verificaFuncao(string tipo, string nome, vector<simbolo> v);
+string traducao_atribuicao(struct atributos,struct atributos, string);
 void imprimeTabela(); // Imprime a tabela de símbolos
 
 vector<map<string, simbolo>> T_simbolo; // Mapa, identificado pelo nome da variável
@@ -89,7 +90,7 @@ string declaracoes = "";
 %token TIPO
 %token ATRIBUI SOMA SUBTRAI MULTIPLICA DIVIDE UNARIOMAIS UNARIOMENOS
 %token MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL IGUAL DIFERENTE E_LOGICO OU_LOGICO VERDADEIRO FALSO NEGAR
-%token IF ELSE WHILE DO FOR CONTINUE BREAK
+%token IF ELSE WHILE DO FOR CONTINUE BREAK SWITCH CASE DEFAULT
 %token SCAN PRINT
 
 %start S
@@ -210,6 +211,10 @@ comando: bloco
 {
 	$$.traducao = $1.traducao;
 }
+|	SWITCH '(' expressao ')' '{' cases '}'
+{
+
+}
 | IF '(' expressao ')' bloco
 {
 	string neg = geraVariavelTemporaria();
@@ -302,80 +307,28 @@ comando: bloco
 }
 ;
 
+cases: CASE NUM ':' comando cases
+{
+	string var = geraVariavelTemporaria();
+	string lbl = geraLabel();
+	string saida = geraLabel();
+	$$.traducao = "\n\t" + var + " = !(" + $5.valor + " == " + $2.label + ");" + "\n\tif(" + var + ")" + "\n\tgoto " + lbl + $4.traducao + "\n\tgoto " + $5.label + ";\n\t" + lbl + "\n\t" + $5.traducao +"\n";
+	adicionaTabela(var, "bool", "", var,"","variável");
+	$$.valor = $5.valor;
+	$$.label = $5.label;
+}
+|	CASE NUM ':' comando
+{
+	
+}
+|	DEFAULT ':' comando
+{
+	$$.traducao = "";
+};
+
 atribuicao:	ID ATRIBUI expressao ';'
 {
-	bool teste;
-	int bloc;
-	tie(teste, bloc) = testa_simbolo($1.label);
-
-	if ((!teste))
-	{
-		if($3.tipo =="string")
-		{
-			string var = geraVariavelTemporaria();
-			$$.traducao = $3.traducao + "\tstcpy(" + var + ", " + $3.label + ");\n";
-			adicionaTabela($1.label,$3.tipo, $3.valor, var,"","variável");
-		}
-		else 
-		{
-			string var = geraVariavelTemporaria();
-			$$.traducao = $3.traducao + "\t" + var + " = " + $3.label + ";\n";
-			adicionaTabela($1.label,$3.tipo, $3.valor, var,"","variável");
-		}
-	}
-	else
-	{
-		$1.tipo = tipo_simbolo($1.label);
-		//cout << bloc<<endl;
-		if($1.tipo == $3.tipo)
-		{
-			if($1.tipo == "string")
-			{
-				$$.traducao=$3.traducao+"\n";
-			}
-			else
-			{
-				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = " + $3.label + ";\n";
-			}
-		}
-		else if($3.tipo == "bool")
-		{
-			yyerror("Variável esperava tipo " + $1.tipo + ", mas recebeu tipo " + $3.tipo);
-		}
-		else if($1.tipo == "float") // Regra para coerção float
-		{
-			if($3.tipo == "int") // Regra para coerção int
-			{
-				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = (float) " + $3.label + ";\n";
-			}
-			else if($3.tipo == "char") // Regra para coerção char
-			{
-				yyerror("Variável esperava tipo " + $1.tipo + ", mas recebeu tipo " + $3.tipo);
-			}
-		}
-		else if($1.tipo == "int") // Regra para coerção int
-		{
-			if($3.tipo == "float") // Regra para coerção float
-			{
-				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = (int) " + $3.label + ";\n";
-			}
-			else if($3.tipo == "char") // Regra para coerção de char
-			{
-				$$.traducao = $3.traducao + "\t" + T_simbolo[bloc][$1.label].nome_temp + " = (int) " + $3.label + ";\n";
-			}
-		}
-		else if($3.tipo=="string")
-		{
-			cout<<T_simbolo[bloc][$3.label].valor;
-			string var = geraVariavelTemporaria();
-			$$.traducao = $3.traducao;
-			//adicionaTabela($$.label,$$.tipo, T_simbolo[bloc][$3.label].valor, var);
-		}
-		else{
-			yyerror("Variável esperava tipo " + $1.tipo + ", mas recebeu tipo " + $3.tipo);
-		}
-		//T_simbolo[bloc][$1.label].valor = T_simbolo[bloc][$3.label].valor;
-	}
+	$$.traducao = traducao_atribuicao($1,$3, "=");
 }
 |	ID UNARIOMAIS ';'
 {
@@ -387,7 +340,22 @@ atribuicao:	ID ATRIBUI expressao ';'
 	VERIFICACAO_ID($1.label, bloc)
 	$$.traducao = "\t" + T_simbolo[bloc][$1.label].nome_temp + " = " + T_simbolo[bloc][$1.label].nome_temp + " - 1;\n";
 }
-;
+|	ID SOMA ATRIBUI expressao ';'
+{
+	$$.traducao = traducao_atribuicao($1,$4, "+=");
+}
+|	ID SUBTRAI ATRIBUI expressao ';'
+{
+	$$.traducao = traducao_atribuicao($1,$4, "-=");
+}
+|	ID MULTIPLICA ATRIBUI expressao ';'
+{
+	$$.traducao = traducao_atribuicao($1,$4, "*=");
+}
+|	ID DIVIDE ATRIBUI expressao ';'
+{
+	$$.traducao = traducao_atribuicao($1,$4, "/=");
+};
 
 declaracao:
 	TIPO ID ';'
@@ -1130,6 +1098,103 @@ string verificaFuncao(string tipo, string nome, vector<simbolo> v)
 		yyerror("Função \"" + nome + "\" não definida!");
 	}
 	return "";
+}
+
+string aval_sinal_attr(string nome1,string nome2, string sinal, string coercao)
+{
+	int s;
+	s = (sinal == "=")? 0: ((sinal == "+=")? 1: ((sinal == "-=")? 2: ((sinal == "*=")? 3: ((sinal == "/=")? 4: -1))));
+	switch(s)
+	{
+		case 0: return coercao + nome2;
+		case 1:	return nome1 + " + " + coercao + nome2;
+		case 2: return nome1 + " - " + coercao + nome2;
+		case 3:	return nome1 + " * " + coercao + nome2;
+		case 4:	return nome1 + " / " + coercao + nome2;
+	}
+	return "";
+}
+
+string traducao_atribuicao(struct atributos s1, struct atributos s3, string sinal)
+{
+	bool teste;
+	string traducao;
+	int bloc;
+	tie(teste, bloc) = testa_simbolo(s1.label);
+
+	if ((!teste))
+	{
+		if(sinal != "=")
+			yyerror("A variável " + s1.label + " não está inicializada.");
+		if(s3.tipo =="string")
+		{
+			string var = geraVariavelTemporaria();
+			traducao = s3.traducao + "\tstcpy(" + var + ", " + s3.label + ");\n";
+			adicionaTabela(s1.label,s3.tipo, s3.valor, var,"","variável");
+		}
+		else 
+		{
+			string var = geraVariavelTemporaria();
+			traducao = s3.traducao + "\t" + var + " = " + s3.label + ";\n";
+			adicionaTabela(s1.label,s3.tipo, s3.valor, var,"","variável");
+		}
+	}
+	else
+	{
+		s1.tipo = tipo_simbolo(s1.label);
+		//cout << bloc<<endl;
+		if(s1.tipo == s3.tipo)
+		{
+			if(s1.tipo == "string")
+			{
+				if(sinal != "=")
+					yyerror("string não suporta esse tipo de atribuição: " + sinal + ".");
+				traducao = s3.traducao+"\n";
+			}
+			else
+			{
+				traducao = s3.traducao + "\t" + T_simbolo[bloc][s1.label].nome_temp + " = " + aval_sinal_attr(T_simbolo[bloc][s1.label].nome_temp, s3.label, sinal,"") + ";\n";
+			}
+		}
+		else if(s3.tipo == "bool")
+		{
+			yyerror("Variável esperava tipo " + s1.tipo + ", mas recebeu tipo " + s3.tipo);
+		}
+		else if(s1.tipo == "float") // Regra para coerção float
+		{
+			if(s3.tipo == "int") // Regra para coerção int
+			{
+				traducao = s3.traducao + "\t" + T_simbolo[bloc][s1.label].nome_temp + " = " + aval_sinal_attr(T_simbolo[bloc][s1.label].nome_temp, s3.label, sinal, " (float) ") + ";\n";
+			}
+			else if(s3.tipo == "char") // Regra para coerção char
+			{
+				yyerror("Variável esperava tipo " + s1.tipo + ", mas recebeu tipo " + s3.tipo);
+			}
+		}
+		else if(s1.tipo == "int") // Regra para coerção int
+		{
+			if(s3.tipo == "float") // Regra para coerção float
+			{
+				traducao = s3.traducao + "\t" + T_simbolo[bloc][s1.label].nome_temp + " = " + aval_sinal_attr(T_simbolo[bloc][s1.label].nome_temp, s3.label, sinal, " (int) ") + ";\n";
+			}
+			else if(s3.tipo == "char") // Regra para coerção de char
+			{
+				traducao = s3.traducao + "\t" + T_simbolo[bloc][s1.label].nome_temp + " = " + aval_sinal_attr(T_simbolo[bloc][s1.label].nome_temp, s3.label, sinal, " (int) ") + ";\n";
+			}
+		}
+		else if(s3.tipo=="string")
+		{
+			cout<<T_simbolo[bloc][s3.label].valor;
+			string var = geraVariavelTemporaria();
+			traducao = s3.traducao;
+			//adicionaTabela($$.label,$$.tipo, T_simbolo[bloc][$3.label].valor, var);
+		}
+		else{
+			yyerror("Variável esperava tipo " + s1.tipo + ", mas recebeu tipo " + s3.tipo);
+		}
+		//T_simbolo[bloc][$1.label].valor = T_simbolo[bloc][$3.label].valor;
+	}
+	return traducao;
 }
 
 void imprimeTabela()

@@ -42,6 +42,9 @@ ID                  {letra}({letra}|{NUM})*
 "false"             return FALSO;
 "!"                 return NEGAR;
 
+"switch"            return SWITCH;
+"case"              return CASE;
+"default"           return DEFAULT;
 "if"                return IF;
 "else"              return ELSE;
 "while"             return WHILE;
