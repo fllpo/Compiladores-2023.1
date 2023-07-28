@@ -418,6 +418,26 @@ declaracao:
 		yyerror("Variável já declarada!");
 	}
 }
+|	TIPO ID '[' ID ']' '[' ID ']' ';'
+{
+	bool teste;
+	int bloc;
+	tie(teste, bloc) = testa_simbolo($2.label);
+	if ((!teste) || bloc != bloco_qtd)
+	{		
+			string var = geraVariavelTemporaria();
+			$$.traducao = "\n\t"+ var + " = malloc(" + T_simbolo[bloco_qtd][$4.label].nome_temp + " * " + T_simbolo[bloco_qtd][$7.label].nome_temp + " * sizeof(" + $1.tipo + "));\n\n";
+			
+			
+			string tamanho = to_string(stoi(T_simbolo[bloco_qtd][$4.label].valor) * stoi(T_simbolo[bloco_qtd][$7.label].valor));
+
+			adicionaTabela($2.label, $1.tipo, "N/A", var, tamanho, "vetor");
+
+
+	}else{
+		yyerror("Variável já declarada!");
+	}
+}
 |	TIPO ID '[' NUM ']' ';'
 {
 	bool teste;
@@ -436,7 +456,30 @@ declaracao:
 	}else{
 		yyerror("Variável já declarada!");
 	}
-};
+}
+|	TIPO ID '[' NUM ']' '[' NUM ']' ';'
+{
+	bool teste;
+	int bloc;
+	tie(teste, bloc) = testa_simbolo($2.label);
+
+	if ((!teste) || bloc != bloco_qtd)
+	{		
+			string var = geraVariavelTemporaria();
+			string var2 = geraVariavelTemporaria();
+			string var3 = geraVariavelTemporaria();
+			$$.traducao = "\t" + var + " = " + $4.traducao +";\n\t" + var2 + " = " + $7.traducao +";\n\t"+ var3 + " = malloc(" + var + " * " + var2 +" * sizeof(" + $1.tipo + "));\n\n";
+			
+			adicionaTabela(var, "int", $4.traducao, var, "", "variável");
+			adicionaTabela(var2, "int", $7.traducao, var2, "", "variável");
+
+            string tamanho = to_string(stoi($4.traducao) * stoi($7.traducao));
+			adicionaTabela($2.label, $1.tipo, "N/A", var3, tamanho, "vetor");
+
+	}else{
+		yyerror("Variável já declarada!");
+	}
+};;
 
 entradas:
 	ID ',' entradas

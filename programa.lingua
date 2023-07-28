@@ -1,15 +1,9 @@
-int a;
-int fun(int a)
-{
-	a = 888;
-}
-
-float fun2(float a)
-{
-	a = 8.88;
-}
-
 main()
 {	
-	a = 999;
+
+	t1=3;
+	t2=4;
+
+	float vetor[t1][t2];
+
 }
