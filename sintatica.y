@@ -22,12 +22,6 @@
 			yyerror("A variável \"" + id_nome + "\" não foi declarada!");					\
 		}
 
-#define VERIFICACAO_FUNC(nome)															\
-		if (!(T_funcs.count(nome)==1))													\
-		{																				\
-			yyerror("A função \"" + nome + "\" não foi declarada!");					\
-		}
-
 using namespace std;
 
 struct atributos
@@ -129,15 +123,17 @@ global:	declaracao
 |	TIPO ID blocofuncao '(' parametros ')' '{' comandos '}'
 {
 	string var = geraFuncao();
-	T_funcs[$3.label] = {var, $1.tipo, param};
+	T_funcs[$2.label] = {var, $1.tipo, param};
 	$$.traducao = "\n\n" + $1.tipo + " " + var + "("+ $5.traducao + ")\n{\n" + declaracoes + "\n" + $8.traducao + "\n\treturn 0;\n}\n";
 	
 	T_debug.push_back(T_simbolo[bloco_qtd]);
 	bloco_qtd--;
 	T_simbolo.pop_back();
 	
-	param = {};
+	vector<simbolo> a;
+	param = a;
 	declaracoes = "";
+	//cout << param.empty() << endl;
 };
 
 parametros:
@@ -712,6 +708,10 @@ fator:
 	$$.label = $2.label;
 	$$.tipo = $2.tipo;
 	$$.valor = $2.valor;
+}
+|	ID '(' expressoes ')'
+{
+
 };
 
 %%
@@ -1045,6 +1045,23 @@ string traducao_declaracao()
 		
 	}
 	return traducao;
+}
+
+inline bool funcao_existe(string nome)
+{
+	return T_funcs.count(nome) == 1;
+}
+
+inline string tipo_funcao(string nome)
+{
+	return T_funcs[nome].tipo;
+}
+
+void verificaFuncao(string tipo, string nome, vector<simbolo> v)
+{
+	if(funcaoExiste(nome)){
+
+	}
 }
 
 void imprimeTabela()

@@ -1,3 +1,4 @@
+int a;
 int fun(int a)
 {
 	a = 888;
@@ -10,5 +11,5 @@ float fun2(float a)
 
 main()
 {	
-	i = 999;
+	a = 999;
 }
