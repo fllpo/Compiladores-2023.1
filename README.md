@@ -1,8 +1,6 @@
 # Língua
 
-Um compilador para a linguagem **Língua**, inspirada nas principais funções de **C** e **Python**.
-
-construído com **C++**, **Bison** e **YACC**.
+Um compilador para a linguagem **Língua**, inspirada nas principais funções de **C** e **Python**. Construído com **C++**, **Bison** e **YACC**.
 ## Rodando localmente
 
 Clone o projeto
